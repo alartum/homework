@@ -56,7 +56,7 @@ bool DoInput (TYPE *var, const char name[])
         }
     }
 
-    return false;
+    return perror ("#Input error"), false;
 }
 
 bool IsPrime (long unsigned n)

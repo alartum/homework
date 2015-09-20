@@ -17,7 +17,7 @@ int main ()
     double a = 0, b = 0, c = 0;
 
     if (!INPUT (a) || !INPUT (b) || !INPUT(c))
-        return COMMENT ("Input error, exit..."), 1;
+        return 1;
 
     double x1 = 0, x2 = 0;
     int nRoots = SolveSquareEquation(a, b, c, &x1, &x2);
