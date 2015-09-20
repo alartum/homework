@@ -6,8 +6,12 @@
 #include <errno.h>
 #include <assert.h>
 
+// Type of operations
 #define TYPE long unsigned
 #define SPEC "%lu"
+
+#define MY_NAME "Alartum"
+#define INIT_INFO(x) ( printf ("#---" x " by " MY_NAME "---\n") )
 #define IS_ZERO(x) ( fabs (x) < DBL_EPSILON )
 // Macro for more comfortable input
 #define INPUT(x) ( DoInput (&(x), #x) )
@@ -20,8 +24,15 @@
 #endif // DEBUG
 
 const int TRY_AMOUNT = 3;
-// Reading double number by its name. isOK = true if success, = false in other case
+// Reading number of type TYPE by its name. True returned if success, false - otherwise.
 bool DoInput (TYPE *var, const char name[]);
+long unsigned Cnk (long unsigned n, long unsigned k);
+int PrintDebug (TYPE var, const char name[]);
+bool IsPrime (long unsigned n);
+// DownFactorial calculates F = n*(n-1)*(n-2)*...*(n-down+1). So, (n - down) is not included.
+long unsigned DownFactorial (long unsigned n, long unsigned down);
+long unsigned Cnk (long unsigned n, long unsigned k);
+
 int PrintDebug (TYPE var, const char name[])
 {
     printf ("(?)%s = " SPEC "\n", name, var);
@@ -62,5 +73,37 @@ bool IsPrime (long unsigned n)
             return false;
 
     return true;
+}
+
+// DownFactorial calculates F = n*(n-1)*(n-2)*...*(n-down+1). So, (n - down) is not included.
+long unsigned DownFactorial (long unsigned n, long unsigned down)
+{
+    if (n == 0)
+        return 1;
+
+    long unsigned result = n;
+    for (long unsigned i = 1; i < down; i ++)
+    {
+        result *= n - i;
+        // Result must not be too big
+        assert (result > 0);
+    }
+    return result;
+}
+
+long unsigned Cnk (long unsigned n, long unsigned k)
+{
+    assert (n >= 0);
+    assert (k >= 0);
+    assert (k <= n);
+
+    if (k == 1 || k == n - 1)
+        return n;
+    else if (k == 0 || k == n)
+        return 1;
+
+    long unsigned difference = n - k;
+
+    return DownFactorial(n, k - 1) / DownFactorial(difference, difference);
 }
 #endif // MYLIB_H_INCLUDED
