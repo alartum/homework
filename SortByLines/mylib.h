@@ -17,6 +17,9 @@
 #define INPUT(x) ( DoInput (&(x), #x) )
 #define COMMENT(x) ( printf ("#" x "\n") )
 
+
+// FYI: В таком виде - ок, но скоро этот макрос станет сложнее и я советую таки
+// перейти на do {} while(0) обертку
 #ifdef DEBUG
 #define DPRINT(x) ( PrintDebug ((x), #x) )
 #else
@@ -36,7 +39,7 @@ long unsigned Cnk (long unsigned n, long unsigned k);
 int PrintDebug (TYPE var, const char name[])
 {
     printf ("(?)%s = " SPEC "\n", name, var);
-
+// FIXME: Why do you need return here? Either check the result of printf or make function void
     return 0;
 }
 
