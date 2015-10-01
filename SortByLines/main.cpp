@@ -48,7 +48,7 @@ int main()
     memcpy (sortedLines, linesMap, sizeof (char*) * nLines);
     QSortLinesBack(sortedLines, nLines);
     SaveMapToFile(savename, sortedLines, nLines);
-
+// FIXME: You have several memory leaks above.
     free ((char*)buffer);
     free (linesMap);
     free (sortedLines);
