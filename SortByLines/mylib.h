@@ -1,5 +1,6 @@
 #ifndef MYLIB_H_INCLUDED
 #define MYLIB_H_INCLUDED
+
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -10,12 +11,17 @@
 #define TYPE size_t
 #define SPEC "%lu"
 
+#define STRUCT_DEBUG(x) ((x)._dump())
 #define MY_NAME "Alartum"
 #define INIT_INFO(x) ( printf ("#---" x " by " MY_NAME "---\n") )
 #define IS_ZERO(x) ( fabs (x) < DBL_EPSILON )
+
 // Macro for more comfortable input
-#define INPUT(x) ( DoInput (&(x), #x) )
+#define INPUT(x)   ( DoInput (&(x), #x) )
 #define COMMENT(x) ( printf ("#" x "\n") )
+
+#define MIN(x, y) (((x) < (y))? (x) : (y))  // #define SQR(x)   ( (x)*(x) )   SQR (2+3)
+#define MAX(x, y) ((x > y)? x : y)
 
 #ifdef DEBUG
 #define DPRINT(x) ( PrintDebug ((x), #x) )
@@ -24,12 +30,15 @@
 #endif // DEBUG
 
 const int TRY_AMOUNT = 3;
-// Reading number of type TYPE by its name. True returned if success, false - otherwise.
+
+/// Reading number of type TYPE by its name.
+/// @return true if success, false - otherwise.
 bool DoInput (TYPE *var, const char name[]);
 long unsigned Cnk (long unsigned n, long unsigned k);
 int PrintDebug (TYPE var, const char name[]);
 bool IsPrime (long unsigned n);
-// DownFactorial calculates F = n*(n-1)*(n-2)*...*(n-down+1). So, (n - down) is not included.
+
+/// DownFactorial calculates F = n*(n-1)*(n-2)*...*(n-down+1). So, (n - down) is not included.
 long unsigned DownFactorial (long unsigned n, long unsigned down);
 long unsigned Cnk (long unsigned n, long unsigned k);
 
@@ -44,6 +53,7 @@ bool DoInput (TYPE *var, const char name[])
 {
     assert (var);
     printf ("#%s>", name);
+
     if (scanf (SPEC, var) == 1)
         return true;
     else
@@ -51,6 +61,7 @@ bool DoInput (TYPE *var, const char name[])
         printf ("#Invalid input\n");
         errno = EIO;
     }
+
     for (int i = 0; i < TRY_AMOUNT - 1; ++i)
     {
         printf ("#%s>", name);

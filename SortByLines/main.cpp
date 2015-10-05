@@ -4,7 +4,9 @@
 #include "mylib.h"
 #include "files.h"
 #include <string.h>
+#include "stringlist.h"
 #include <errno.h>
+
 
 const size_t MAX_FILENAME = 256;
 
@@ -12,48 +14,44 @@ int main()
 {
     INIT_INFO ("SortByLines");
 
-    char filename[MAX_FILENAME], savename[MAX_FILENAME];
+    char filename[MAX_FILENAME] = "Onegin.txt";//{};
+    char savename[MAX_FILENAME] = "NewOnegin.txt";//{};
 
-    COMMENT ("File to read from:");
+    /*COMMENT ("File to read from:");
     printf (">");
     scanf ("%s", filename);
     COMMENT ("File to save to:");
     printf (">");
-    scanf ("%s", savename);
+    scanf ("%s", savename); */
 
-    size_t length = 0;
-    const char* buffer = ReadFileDynamic (filename, &length);
-    if (!buffer)
+    StringList strings = {};
+    stringlist_init(&strings);
+    if (stringlist_construct (&strings, filename) == ERROR)
     {
-        perror ("Reading error");
+        perror("General error");
         return 1;
     }
 
-    size_t nLines = 0;
-    char** linesMap = BuildLinesMap ((char*)buffer, length, &nLines);
-    if (!linesMap)
+//        stringlist_dump(&strings);
+    StringList sorted = NOINIT; // = { NOINIT_POISON };
+    stringlist_init(&sorted);
+    if (stringlist_construct (&sorted, &strings) == ERROR)
     {
-        perror ("Parsing error");
-        return 1;
+        perror("Other error");
+        return 2;
     }
 
-    char** sortedLines = (char**)calloc (nLines, sizeof(char*));
-    if (!sortedLines)
+  //  stringlist_sort (&sorted);
+    stringlist_back_sort (&sorted);
+    if (stringslist_to_file (&sorted, savename) == ERROR)
     {
-        errno = ENOMEM;
-        perror ("Memory");
-        return 1;
+        perror ("One more error");
+        return 3;
     }
-
-    memcpy (sortedLines, linesMap, sizeof (char*) * nLines);
-    QSortLinesBack(sortedLines, nLines);
-    SaveMapToFile(savename, sortedLines, nLines);
-
-    free ((char*)buffer);
-    free (linesMap);
-    free (sortedLines);
+    stringlist_destruct (&sorted);
+    stringlist_destruct (&strings);
     COMMENT("Done!");
-    printf ("#Data was successfully saved to %s.\n", savename);
+    printf ("#Data was successfully saved to %s\n", savename);
 
     return 0;
 }

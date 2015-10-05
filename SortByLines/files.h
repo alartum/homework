@@ -1,10 +1,10 @@
 #ifndef FILES_H_INCLUDED
 #define FILES_H_INCLUDED
-
+//! OLD LIBRARY
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "sort.h"
 
 int SaveMapToFile (const char filename[], char** linesMap, size_t nLines)
 {
@@ -201,18 +201,6 @@ int CompareStringsBack (const char* s1, const char* s2)
     if (*s1 == *s2)
         return 0;
     return ((*s1 < *s2) ? -1 : +1);
-}
-
-template <class T>
-int Swap (T* data, size_t i, size_t j)
-{
-    T temp;
-
-    temp = data[i];
-    data[i] = data[j];
-    data[j] = temp;
-
-    return 0;
 }
 
 int SortLinesMapBack (char* linesMap[], size_t from, size_t to)
