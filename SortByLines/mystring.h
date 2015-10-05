@@ -259,7 +259,7 @@ int string_construct_rn (String* This, const char* str)
 
         memcpy (This->str, str, i);
         This->str[i] = '\0';
-        string_dump(This);
+        //string_dump(This);
         return OK;
     }
 }
