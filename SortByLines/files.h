@@ -4,11 +4,16 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+<<<<<<< HEAD
 #include "sort.h"
 
+=======
+
+// FYI: It'll be better to create an enum desctibing errors.
+>>>>>>> 6df2d3a8bcc05ff0adbc5d30619f5894f5c7a42e
 int SaveMapToFile (const char filename[], char** linesMap, size_t nLines)
 {
-    assert (linesMap);
+    assert (linesMap); // FIXME: Why do you need both checks?
     if (!linesMap)
     {
         errno = EFAULT;
@@ -24,9 +29,11 @@ int SaveMapToFile (const char filename[], char** linesMap, size_t nLines)
         if (!linesMap[i])
         {
             errno = EFAULT;
+            // FIXME: And what about fclose?
             return 1;
         }
         fprintf (f, "%s\n", linesMap[i]);
+        // FIXME: the function above can return error
     }
 
     fclose (f);
@@ -42,6 +49,7 @@ char* ReadFileDynamic (const char filename[], size_t* nRead = NULL)
     if (!f) // fopen() writes to errno automatically
         return NULL;
     if (fseek (f, 0, SEEK_END)) // writes to errno too
+// FIXME: And you forgot to close file again
         return NULL;
 
     size_t length = ftell(f);
@@ -50,9 +58,11 @@ char* ReadFileDynamic (const char filename[], size_t* nRead = NULL)
         *nRead = length;
 
     if (errno)
+// FIXME: And again
         return NULL;
     else
-        length /= sizeof (char);
+// FIXME: sizeof(char) == 1 always. Sorry:)
+        length /= sizeof (char); 
 
     if (length == 0)
     {
@@ -63,6 +73,7 @@ char* ReadFileDynamic (const char filename[], size_t* nRead = NULL)
     if (!buffer)
     {
         errno = ENOMEM;
+// FIXME: and again
         return NULL;
     }
 
@@ -110,13 +121,14 @@ char** BuildLinesMap (char chars[], size_t length, size_t* nLines = NULL)
     char** stringsMap = (char**) calloc (nStrings, sizeof (*stringsMap));
     if (!stringsMap)
     {
-        errno = ENOMEM;
+        errno = ENOMEM; // FIXME: errno equals ENOMEM anyway after this fail
         return NULL;
     }
 
-    size_t firstLetter = 0;
+    size_t firstLetter = 0; // FIXME: line_begin?
+    // FIXME: < '\n'? Are you sure? Anyway, it depends on encoding
     for (; chars[firstLetter] < '\n' && chars[firstLetter] > 0; firstLetter ++);
-    stringsMap[0] = &chars[firstLetter];
+    stringsMap[0] = &chars[firstLetter]; // FYI: chars + firstLetter?
     size_t current = 1;
 
     for (size_t i = firstLetter; i < length - 1; i ++)
@@ -139,6 +151,10 @@ char** BuildLinesMap (char chars[], size_t length, size_t* nLines = NULL)
 
     return stringsMap;
 }
+
+// FYI: Stings map concept is ok. It'll be even faster in case of huge files.
+// But in your case it'd be more simple to scan file line-by-line and save lines
+// subsequently. You can scan the whole line e.g. with scanf ("%^[\n]")
 
 int PrintLinesMap (const char* linesMap[], size_t nLines)
 {
@@ -168,11 +184,11 @@ int CompareStrings (const char* s1, const char* s2)
     if (!(s1 && s2))
     {
         errno = EFAULT;
-
+// FIXME: please, use either enum or literal constants as return values
         return -2;
     }
     for ( ; *s1 == *s2; s1++, s2++)
-        if (*s1 == '\0')
+        if (*s1 == '\0') // FIXME: incorrect
             return 0;
 
     return ((*s1 < *s2) ? -1 : +1);
@@ -196,6 +212,7 @@ int CompareStringsBack (const char* s1, const char* s2)
 
     for ( ; *s1 != '\0'; s1++);
     for ( ; *s2 != '\0'; s2++);
+    // FIXME: What if s1 is shorter than s2?
     for ( ; *s1 == *s2 && s1 != start; s1--, s2--);
 
     if (*s1 == *s2)
@@ -203,6 +220,21 @@ int CompareStringsBack (const char* s1, const char* s2)
     return ((*s1 < *s2) ? -1 : +1);
 }
 
+<<<<<<< HEAD
+=======
+template <class T>
+int Swap (T* data, size_t i, size_t j)
+{
+    T temp;
+
+    temp = data[i];
+    data[i] = data[j];
+    data[j] = temp;
+
+    return 0; // FIXME: Why do you need return value?
+}
+
+>>>>>>> 6df2d3a8bcc05ff0adbc5d30619f5894f5c7a42e
 int SortLinesMapBack (char* linesMap[], size_t from, size_t to)
 {
     size_t i = 0, last = 0;
@@ -229,6 +261,8 @@ int QSortLinesBack (char* linesMap[], size_t nLines)
     return 0;
 }
 
+// FIXME: Why int data[]?
+// FIXME: Get rid of printf?
 int QSort (int data[], size_t from, size_t to)
 {
     size_t i = 0, last = 0;
