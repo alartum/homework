@@ -185,6 +185,7 @@ bool cpu_out (CPU* This);
 *
 *@param program Array of instruction codes.
 *@param map The map to be build.
+*@return true if no error has occured, false otherwise.
 */
 void build_map (const int program[], int map[]);
 
@@ -475,6 +476,8 @@ bool cpu_execute (CPU* This, const int program[])
         default:
             return false;
         }
+        //cpu_dump(This);
+        //getchar();
     }
     return true;
 }

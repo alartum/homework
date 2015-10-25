@@ -10,8 +10,8 @@
 /// Type of stack's values.
 #define TYPE int
 /// Maximum number of elements in stack.
-#define MAX_SIZE 16
-#define MAX_PRINTED MAX_SIZE
+#define STACK_SIZE 8
+#define MAX_PRINTED STACK_SIZE
 
 /// More comfortable dump
 #define Stack_dump(This) stack_dump_(This, #This)
@@ -27,7 +27,7 @@ Stack contains integer numbers and provides some operations with them
 */
 typedef struct
 {
-    TYPE values[MAX_SIZE];/**< Array of values. */
+    TYPE values [STACK_SIZE];/**< Array of values. */
     TYPE* top;/**< Pointer to the top element of stack. */
     size_t size;/**< Number of elements in the stack. */
 
@@ -197,7 +197,7 @@ bool stack_push (Stack* This, TYPE value)
         ASSERT_OK(Stack, This);
         return true;
     }
-    else if (This->size == MAX_SIZE)
+    else if (This->size == STACK_SIZE)
     {
         stack_destruct(This);
         return false;

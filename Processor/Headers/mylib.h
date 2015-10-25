@@ -24,6 +24,7 @@ enum MAIN_ERRORS
 #define true 1
 /// Boolean false
 #define false 0
+
 #if !defined(AUTHOR) || !defined (PROJECT) || !defined (VERSION)
 #error Please, define AUTHOR, PROJECT and VERSION.
 #else
