@@ -7,7 +7,7 @@
 /// Project name
 #define PROJECT "StackProcessor"
 /// Version
-#define VERSION "2"
+#define VERSION "2.1"
 
 #include "mylib.h"
 #include "CPU.h"
@@ -48,13 +48,27 @@ int main (int argc, char* argv[])
     }
 
     int program[MAX_PROGRAM_LENGTH] = {};
-    for (int i = 0; EOF != fscanf (fProgram, "%d", &program[i]); i++);
+    int success = 0;
+    for (int i = 0; EOF != (success = fscanf (fProgram, "%d", &program[i])); i++)
+        if (!success)
+        {
+            COMMENT ("Error! The file is not executable as it containes something except code.");
+            fclose (fProgram);
 
+            return WRONG_RESULT;
+        }
+
+    fclose (fProgram);
     CPU cpu = {};
     cpu_construct(&cpu);
-
     if (!cpu_execute(&cpu, program))
-        return NO_ERROR;
+    {
+        cpu_destruct(&cpu);
+        COMMENT ("Runtime error occured!");
+
+        return WRONG_RESULT;
+    }
     cpu_destruct(&cpu);
+
     return NO_ERROR;
 }
