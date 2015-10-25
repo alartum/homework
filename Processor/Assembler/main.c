@@ -64,86 +64,135 @@ int main (int argc, char* argv[])
         perror ("#Output error");
         return WRONG_RESULT;
     }
-    int number = 0, nSuccess = 0;
-    while (EOF != (nSuccess = fscanf (in, "%d", &number)))
-    {
-        if (nSuccess != 1)
-        {
-            char command[COMMAND_LENGTH] = {};
-            fscanf (in, "%s", command);
-            if (!strcmp (command, "PUSH"))
-            {
-                char address[COMMAND_LENGTH] = {};
-                fscanf (in, "%s", address);
-                if (!strcmp (address, "RAX"))
-                    fprintf (out, "%d %d ", PUSH_RX, RAX);
-                else if (!strcmp (address, "RBX"))
-                    fprintf (out, "%d %d ", PUSH_RX, RBX);
-                else if (!strcmp (address, "RCX"))
-                    fprintf (out, "%d %d ", PUSH_RX, RCX);
-                else if (!strcmp (address, "RDX"))
-                    fprintf (out, "%d %d ", PUSH_RX, RDX);
-                else
-                {
-                    number = 0;
-                    sscanf (address, "%d", &number);
-                    fprintf (out, "%d %d ", PUSH, number);
-                }
-            }
-            else if (!strcmp (command, "POP"))
-            {
-                fprintf (out, "%d ", POP);
-                char address[COMMAND_LENGTH] = {};
 
-                fscanf (in, "%s", address);
-                if (!strcmp (address, "RAX"))
-                    fprintf (out, "%d ", RAX);
-                else if (!strcmp (address, "RBX"))
-                    fprintf (out, "%d ", RBX);
-                else if (!strcmp (address, "RCX"))
-                    fprintf (out, "%d ", RCX);
-                else if (!strcmp (address, "RDX"))
-                    fprintf (out, "%d ", RDX);
-                else
+    char command[COMMAND_LENGTH] = {}; // String for each command
+    int counter = -1; // Commands counter
+
+    while (EOF != fscanf (in, "%s", command))
+    {
+        counter ++;
+        if (!strcmp (command, "PUSH"))
+        {
+            char address[COMMAND_LENGTH] = {};
+            if (!fscanf (in, "%s", address))
+            {
+                printf ("#[ERROR] Command #%d: PUSH has wrong argument.\n", counter);
+                fprintf (out, "%d ERROR", ERROR);
+                fclose (in);
+                fclose (out);
+
+                return WRONG_RESULT;
+            }
+            if (!strcmp (address, "RAX"))
+                fprintf (out, "%d %d ", PUSH_RX, RAX);
+            else if (!strcmp (address, "RBX"))
+                fprintf (out, "%d %d ", PUSH_RX, RBX);
+            else if (!strcmp (address, "RCX"))
+                fprintf (out, "%d %d ", PUSH_RX, RCX);
+            else if (!strcmp (address, "RDX"))
+                fprintf (out, "%d %d ", PUSH_RX, RDX);
+            else
+            {
+                int argument = 0;
+                if (!sscanf (address, "%d", &argument))
                 {
-                    printf ("#Error! Wrong register to POP: %s\n", address);
-                    fprintf (out, "%d", ERROR);
+                    printf ("#[ERROR] Command #%d: PUSH has wrong register.\n", counter);
+                    fprintf (out, "%d ERROR", ERROR);
                     fclose (in);
                     fclose (out);
 
                     return WRONG_RESULT;
                 }
+                fprintf (out, "%d %d ", PUSH, argument);
             }
-            else if (!strcmp (command, "END"))
-                fprintf (out, "%d ", END);
-            else if (!strcmp (command, "ADD"))
-                fprintf (out, "%d ", ADD);
-            else if (!strcmp (command, "SUB"))
-                fprintf (out, "%d ", SUB);
-            else if (!strcmp (command, "MUL"))
-                fprintf (out, "%d ", MUL);
-            else if (!strcmp (command, "DIV"))
-                fprintf (out, "%d ", DIV);
-            else if (!strcmp (command, "POW"))
-                fprintf (out, "%d ", POW);
-            else if (!strcmp (command, "JA"))
-                fprintf (out, "%d ", JA);
-            else if (!strcmp (command, "JMP"))
-                fprintf (out, "%d ", JMP);
-            else if (!strcmp (command, "OUT"))
-                fprintf (out, "%d ", OUT);
+        }
+        else if (!strcmp (command, "POP"))
+        {
+            fprintf (out, "%d ", POP);
+            char address[COMMAND_LENGTH] = {};
+
+            if (!fscanf (in, "%s", address))
+            {
+                printf ("#[ERROR] Command #%d: POP has wrong argument.\n", counter);
+                fprintf (out, "%d ERROR", ERROR);
+                fclose (in);
+                fclose (out);
+
+                return WRONG_RESULT;
+            }
+            if (!strcmp (address, "RAX"))
+                fprintf (out, "%d ", RAX);
+            else if (!strcmp (address, "RBX"))
+                fprintf (out, "%d ", RBX);
+            else if (!strcmp (address, "RCX"))
+                fprintf (out, "%d ", RCX);
+            else if (!strcmp (address, "RDX"))
+                fprintf (out, "%d ", RDX);
             else
             {
-                printf ("#Error! Wrong command: %s\n", command);
-                fprintf (out, "ERROR");
+                printf ("#[ERROR] Command #%d: PUSH has wrong register.\n", counter);
+                fprintf (out, "%d ERROR", ERROR);
                 fclose (in);
                 fclose (out);
 
                 return WRONG_RESULT;
             }
         }
+        else if (!strcmp (command, "END"))
+            fprintf (out, "%d ", END);
+        else if (!strcmp (command, "ADD"))
+            fprintf (out, "%d ", ADD);
+        else if (!strcmp (command, "SUB"))
+            fprintf (out, "%d ", SUB);
+        else if (!strcmp (command, "MUL"))
+            fprintf (out, "%d ", MUL);
+        else if (!strcmp (command, "DIV"))
+            fprintf (out, "%d ", DIV);
+        else if (!strcmp (command, "POW"))
+            fprintf (out, "%d ", POW);
+        else if (!strcmp (command, "JA"))
+        {
+            fprintf (out, "%d ", JA);
+
+            int argument = 0;
+            if (!fscanf (in, "%d", &argument))
+            {
+                printf ("#[ERROR] Command #%d: JA has wrong argument.\n", counter);
+                fprintf (out, "%d ERROR", ERROR);
+                fclose (in);
+                fclose (out);
+
+                return WRONG_RESULT;
+            }
+            fprintf (out, "%d ", argument);
+        }
+        else if (!strcmp (command, "JMP"))
+        {
+            fprintf (out, "%d ", JMP);
+
+            int argument = 0;
+            if (!fscanf (in, "%d", &argument))
+            {
+                printf ("#[ERROR] Command #%d: JMP has wrong argument.\n", counter);
+                fprintf (out, "%d ERROR", ERROR);
+                fclose (in);
+                fclose (out);
+
+                return WRONG_RESULT;
+            }
+            fprintf (out, "%d ", argument);
+        }
+        else if (!strcmp (command, "OUT"))
+            fprintf (out, "%d ", OUT);
         else
-            fprintf (out, "%d ", number);
+        {
+            printf ("#[ERROR] Command #%d: unknown command.\n", counter);
+            fprintf (out, "%d ERROR", ERROR);
+            fclose (in);
+            fclose (out);
+
+            return WRONG_RESULT;
+        }
     }
     fclose (in);
     fclose (out);
