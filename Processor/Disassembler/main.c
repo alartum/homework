@@ -64,7 +64,9 @@ int main (int argc, char* argv[])
         perror ("#Output error");
         return WRONG_RESULT;
     }
+
     int code = 0;
+
     while (EOF != fscanf (in, "%d", &code))
     {
         DPRINT_int(code);
@@ -120,7 +122,6 @@ int main (int argc, char* argv[])
                 fprintf (out, "RDX\n");
                 break;
             default:
-                printf ("#HERE\n");
                 printf ("#Error! Wrong register to POP: %d\n", code);
                 fprintf (out, "ERROR");
                 fclose (in);
@@ -160,6 +161,11 @@ int main (int argc, char* argv[])
         case OUT:
             fprintf (out, "OUT\n");
             break;
+        case ERROR:
+            printf ("#Error! The code is corrupted.");
+            fprintf (out, "ERROR");
+
+            return WRONG_RESULT;
         default:
             printf ("#Error! Wrong code %d\n", code);
             fprintf (out, "ERROR");
