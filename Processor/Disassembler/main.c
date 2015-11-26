@@ -1,6 +1,3 @@
-#include <stdio.h>
-
-//#define DEBUG
 /// Author name
 #define AUTHOR "Alartum"
 /// Project name
@@ -8,174 +5,194 @@
 /// Version
 #define VERSION "1"
 
-#define COMMAND_LENGTH 5
-
+#include <stdio.h>
 #include "mylib.h"
-#include "CPU.h"
+#include "exit_codes.h"
 #include <string.h>
+#include <limits.h>
+
+#define DEFINES_ONLY
+#include "commands.h"
+#undef DEFINES_ONLY
+
+enum PARSING_STATE
+{
+    CMD,
+    ARG,
+    DONE
+};
 
 int main (int argc, char* argv[])
 {
-    char inName[64] = {}, outName[64] = {};
+    CHECK_DEFAULT_ARGS();
+    char inName[NAME_MAX] = {}, outName[NAME_MAX] = {};
     switch (argc)
     {
-    case 2:
-        if (!strcmp (argv[1], "--help"))
-        {
-            INFO();
-            COMMENT ("Disassembler converts the machine code back to source code.");
-            printf ("The right way to call it:\n");
-            printf ("\tDisassembler program.code [source.asm]\n");
-            printf ("(1)'program.code' stands for the output.\n");
-            printf ("(2)'source.asm' stands for the file with code and may not be given;\n");
-            printf ("The result is written to 'source.asm' in this case.\n");
-            printf ("Other possible keys:\n");
-            printf ("\t --help to get help\n");
-            printf ("\t --version to get version\n");
-
-            return INFO_CALL;
-        }
-        if (!strcmp (argv[1], "--version"))
-        {
-            COMMENT("Version: " VERSION);
-            return INFO_CALL;
-        }
-        strcpy (inName, argv[1]);
-        strcpy (outName, "source.asm");
-        break;
     case 3:
         strcpy (inName, argv[1]);
         strcpy (outName, argv[2]);
         break;
+    case 2:
+        strcpy (inName, argv[1]);
+        strcpy (outName, "source.asm");
+        break;
     default:
-        COMMENT ("Wrong use. Use --help specifier to get help.");
-        return WRONG_USE;
+        WRITE_WRONG_USE();
     }
 
-    FILE *in = fopen (inName, "r");
-    if (!in)
+    Buffer assembled = {};
+    if (!buffer_construct (&assembled, inName))
     {
-        perror ("#Program code error");
-        return WRONG_RESULT;
-    }
-    FILE *out = fopen (outName, "w");
-    if (!out)
-    {
-        perror ("#Output error");
+        perror ("#Input error");
         return WRONG_RESULT;
     }
 
-    int code = 0;
+    Buffer source;
+    buffer_construct_empty (&source, 10*assembled.length);
 
-    while (EOF != fscanf (in, "%d", &code))
+    char state = CMD, arg_type = -1;
+    int reading_pos = 0;
+    while (reading_pos <= assembled.length)
     {
-        DPRINT_int(code);
-        switch (code)
+        switch (state)
         {
-        case PUSH:
-            fprintf (out, "PUSH ");
-            fscanf (in, "%d", &code);
-            fprintf (out, "%d\n", code);
-            break;
-        case PUSH_RX:
-            fprintf (out, "PUSH ");
-            fscanf (in, "%d", &code);
-
-            switch (code)
+        case CMD:
+            ;// Just very strange behavior
+            char code = assembled.chars[reading_pos];
+            reading_pos++;
+            #define CMD(name, key, shift, arguments) \
+            if (!(arguments & ARG_OVL)) \
+            {\
+                if (state == CMD && code == key)\
+                {\
+                    printf ("%s ", #name);\
+                    strcat (source.chars, #name " ");\
+                    if (arguments & ARG_NO)\
+                    {\
+                        state = DONE;\
+                    }\
+                    else \
+                    {\
+                        state = ARG;\
+                        arg_type = arguments;\
+                    }\
+                }\
+                else if (arguments & ARG_REG && code == key + 1)\
+                {\
+                    printf (#name " ");\
+                    strcat (source.chars, #name " ");\
+                    state = ARG;\
+                    arg_type = ARG_REG;\
+                }\
+                else if (arguments & ARG_MEM && code == key + 2)\
+                {\
+                    printf (#name " ");\
+                    strcat (source.chars, #name " ");\
+                    state = ARG;\
+                    arg_type = ARG_MEM;\
+                }\
+            }
+            #include "commands.h"
+            #undef CMD
+            if (state == CMD)
             {
-            case RAX:
-                fprintf (out, "RAX\n");
-                break;
-            case RBX:
-                fprintf (out, "RBX\n");
-                break;
-            case RCX:
-                fprintf (out, "RCX\n");
-                break;
-            case RDX:
-                fprintf (out, "RDX\n");
-                break;
-            default:
-                printf ("#Error! Wrong register to PUSH: %d\n", code);
-                fprintf (out, "ERROR");
-                fclose (in);
-                fclose (out);
+                printf ("Code is corrupted\n");
+                return WRONG_RESULT;
+            }
 
+            break;
+        case ARG:
+            if ((state != DONE) && (arg_type & ARG_NUM))
+            {
+                float num = *(float*)(assembled.chars+reading_pos);
+
+                char *temp = (char*)calloc (128, sizeof(char));
+                temp[0] = '\0';
+                sprintf (temp, "%g", num);
+                strcat (source.chars, temp);
+                free (temp);
+
+                printf ("(%g)", num);
+                reading_pos += sizeof(float);
+                state = DONE;
+            }
+            if ((state != DONE) && (arg_type & ARG_MEM))
+            {
+                unsigned mem = *(unsigned*)(assembled.chars + reading_pos);
+
+                char *temp = (char*)calloc (128, sizeof(char));
+                temp[0] = '\0';
+                sprintf (temp, "[%u]", mem);
+                strcat (source.chars, temp);
+                free (temp);
+
+                printf ("[%u]", mem);
+                // Changing command identifier to mem
+                reading_pos += sizeof(unsigned);
+                state = DONE;
+            }
+            if ((state != DONE) && (arg_type & ARG_REG))
+            {
+                char reg = assembled.chars[reading_pos];
+                reading_pos++;
+                #define ADDRESS(name, address) \
+                if (state != DONE && reg == address)\
+                {\
+                    /* Changing command identifier to reg*/\
+                    char *temp = (char*)calloc (128, sizeof(char));\
+                    temp[0] = '\0';\
+                    sprintf (temp, #name);\
+                    strcat (source.chars, temp);\
+                    free (temp);\
+                    printf ("%s", #name);\
+                    state = DONE;\
+                }
+                #include "reg_address.h"
+                #undef ADDRESS
+            }
+            if ((state != DONE) && (arg_type & ARG_POS))
+            {
+                int pos = *(int*)(assembled.chars+reading_pos);
+
+                char *temp = (char*)calloc (128, sizeof(char));
+                temp[0] = '\0';
+                sprintf (temp, "%d", pos);
+                strcat (source.chars, temp);
+                free (temp);
+
+                printf ("{%d}", pos);
+                reading_pos += sizeof(int);
+                state = DONE;
+            }
+
+            if (state != DONE)
+            {
+                printf ("\nCommand is corrupted\n");
+                buffer_destruct(&assembled);
                 return WRONG_RESULT;
             }
             break;
-        case POP:
-            fprintf (out, "POP ");
-            fscanf (in, "%d", &code);
-            switch (code)
-            {
-            case RAX:
-                fprintf (out, "RAX\n");
-                break;
-            case RBX:
-                fprintf (out, "RBX\n");
-                break;
-            case RCX:
-                fprintf (out, "RCX\n");
-                break;
-            case RDX:
-                fprintf (out, "RDX\n");
-                break;
-            default:
-                printf ("#Error! Wrong register to POP: %d\n", code);
-                fprintf (out, "ERROR");
-                fclose (in);
-                fclose (out);
+        }
 
-                return WRONG_RESULT;
-            }
-            break;
-        case END:
-            fprintf (out, "END\n");
-            break;
-        case ADD:
-            fprintf (out, "ADD\n");
-            break;
-        case SUB:
-            fprintf (out, "SUB\n");
-            break;
-        case MUL:
-            fprintf (out, "MUL\n");
-            break;
-        case DIV:
-            fprintf (out, "DIV\n");
-            break;
-        case POW:
-            fprintf (out, "POW\n ");
-            break;
-        case JA:
-            fprintf (out, "JA ");
-            fscanf (in, "%d", &code);
-            fprintf (out, "%d\n", code);
-            break;
-        case JMP:
-            fprintf (out, "JMP ");
-            fscanf (in, "%d", &code);
-            fprintf (out, "%d\n", code);
-            break;
-        case OUT:
-            fprintf (out, "OUT\n");
-            break;
-        case ERROR:
-            printf ("#Error! The code is corrupted.");
-            fprintf (out, "ERROR");
-
-            return WRONG_RESULT;
-        default:
-            printf ("#Error! Wrong code %d\n", code);
-            fprintf (out, "ERROR");
-
-            return WRONG_RESULT;
+        //^^^^^^^^^^^^^^^^^^^^^^^^^
+        //Words parsing END
+        //^^^^^^^^^^^^^^^^^^^^^^^^^
+        if (state == DONE)
+        {
+            printf ("\n");
+            strcat (source.chars, "\n");
+            state = CMD;
         }
     }
-    fclose (in);
-    fclose (out);
-    printf("#Code sucessfully written to %s.\n", outName);
 
+    buffer_destruct(&assembled);
+    open_file (out, outName, "wb", "#Output error");
+    fprintf (out, "%s", source.chars);
+    buffer_destruct(&source);
+    close_file (out);
+    printf("#Programm successfully written to %s.\n", outName);
+    //^^^^^^^^^^^^^^^^^^^^^^^^^
+    //Output END
+    //^^^^^^^^^^^^^^^^^^^^^^^^^
     return NO_ERROR;
 }

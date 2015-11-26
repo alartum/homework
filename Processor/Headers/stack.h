@@ -1,4 +1,3 @@
-/** @file */
 
 #ifndef STACK_H_INCLUDED
 #define STACK_H_INCLUDED
@@ -8,10 +7,10 @@
 #include <string.h>
 
 /// Type of stack's values.
-#define TYPE int
+#define TYPE float
 /// Maximum number of elements in stack.
-#define STACK_SIZE 8
-#define MAX_PRINTED STACK_SIZE
+#define STACK_SIZE 32
+#define MAX_PRINTED 8
 
 /// More comfortable dump
 #define Stack_dump(This) stack_dump_(This, #This)
@@ -22,7 +21,6 @@
 
 /**
 @brief Simple stack of integer
-
 Stack contains integer numbers and provides some operations with them
 */
 typedef struct
@@ -172,16 +170,16 @@ void stack_dump_ (const Stack* This, const char name[])
     {
         int i = 0;
         for (; (This->values + i)!= This->top && i < MAX_PRINTED; i ++)
-            printf ("        ->[%d] %d\n", i, This->values[i]);
+            printf ("        ->[%d] %g\n", i, This->values[i]);
         // Printing top
-        printf ("        -->[%d] %d\n", i, This->values[i]);
+        printf ("        -->[%d] %g\n", i, This->values[i]);
         i++;
         for (; i < MAX_PRINTED; i ++)
-            printf ("          [%d] %d\n", i, This->values[i]);
+            printf ("          [%d] %g\n", i, This->values[i]);
     }
     else
         for (int i = 0; i < MAX_PRINTED; i ++)
-            printf ("          [%d] %d\n", i, This->values[i]);
+            printf ("          [%d] %g\n", i, This->values[i]);
     printf ("}\n");
 }
 

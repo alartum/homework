@@ -3,12 +3,14 @@
 #ifndef CPU_H_INCLUDED
 #define CPU_H_INCLUDED
 
-#include "CPU.h"
 #include <math.h>
 #include <assert.h>
 #include <errno.h>
 #include "stack.h"
-#include "codes.h"
+
+#define DEFINES_ONLY
+#include "reg_address.h"
+#undef DEFINES_ONLY
 
 /// More comfortable dump
 #define CPU_dump(This) cpu_dump_(This, #This)
@@ -24,8 +26,11 @@ Processor is a structure that containes a stack and a register to operate with.
 */
 typedef struct
 {
-    TYPE registers[REGISTERS_NUMBER];/**< Registers of the processor (64-bit).*/
+    char registers[REG_SIZE * REG_NUMBER];/**< Registers of the processor*/
     Stack stack;/**< Operating stack. */
+    Stack fu_stack; /**< Stack that contains functions return positions */
+    int position;
+    Buffer program;
 
     bool state;/**< State of the CPU. true if ON, false if OFF. */
 } CPU;
@@ -83,7 +88,7 @@ void cpu_dump_ (const CPU* This, const char name[]);
 *@param value The value to be put is the stack.
 *@return true if success, false otherwise.
 */
-bool cpu_push (CPU* This, TYPE value);
+bool cpu_push (CPU* This);
 
 /**
 *@brief Pushes variable to CPU stack.
@@ -93,7 +98,7 @@ bool cpu_push (CPU* This, TYPE value);
 *@param registerN Register to read the value from.
 *@return true if success, false otherwise.
 */
-bool cpu_push_rx (CPU* This, enum REGISTERS registerN);
+bool cpu_push_reg (CPU* This);
 
 /**
 *@brief Pops value from the stack.
@@ -104,7 +109,7 @@ bool cpu_push_rx (CPU* This, enum REGISTERS registerN);
 *@return true if success, false otherwise. In case it wasn't successful, invalidates CPU.
 *@warning Stack must contain at least one element.
 */
-bool cpu_pop_rx (CPU* This, enum REGISTERS registerN);
+bool cpu_pop_reg (CPU* This);
 
 /**
 *@brief Summs the top two elements of the stack.
@@ -170,7 +175,7 @@ bool cpu_pow (CPU* This);
 *@return true if no error has occured, false otherwise. In case of fail invalidates CPU.
 *@warning End of the program must be marked with 'end' code. Undefined behaviour otherwise.
 */
-bool cpu_execute (CPU* This, const int program[]);
+bool cpu_execute (CPU* This);
 
 /**
 *@brief Prints the top stack element.
@@ -181,18 +186,127 @@ bool cpu_execute (CPU* This, const int program[]);
 bool cpu_out (CPU* This);
 
 /**
-*@brief Builds commands map by the given program.
+*@brief Scans value and puts it to the top of the stack
 *
-*@param program Array of instruction codes.
-*@param map The map to be build.
-*@return true if no error has occured, false otherwise.
+*@param This Pointer to the CPU to perform operation on.
+*@return true if no error has occured, false otherwise. In case of fail invalidates CPU.
 */
-void build_map (const int program[], int map[]);
+bool cpu_in (CPU* This);
+
+bool cpu_jmp (CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    This->position++;
+    int new_position = *(int*)(This->program.chars + This->position);
+    This->position = new_position;
+    //printf ("jmp %d\n", new_position);
+
+    return true;
+}
+
+#define IF_JUMP(name, operation) \
+bool cpu_ ## name (CPU* This)\
+{\
+    ASSERT_OK(CPU, This);\
+    TYPE top = 0, next = 0;\
+    This->position++;\
+    int new_position = *(int*)(This->program.chars + This->position);\
+    \
+    if (!stack_pop(&This->stack, &top) || !stack_pop(&This->stack, &next))\
+    {\
+        cpu_destruct(This);\
+        ASSERT_OK(CPU, This);\
+        return false;\
+    }\
+    else\
+    {\
+        /*printf ("CHECK: %f " #operation " %f =>", top, next);*/\
+        if (top operation next)\
+        {\
+            This->position = new_position;\
+            /*printf ("jmp %d\n", new_position);*/\
+        }\
+        else\
+        {\
+            This->position += sizeof(int);\
+            /*printf ("jmp ++\n");*/\
+        }\
+        ASSERT_OK(CPU, This);\
+        return true;\
+    }\
+}
+
+IF_JUMP (ja,  > )
+IF_JUMP (jae, >=)
+IF_JUMP (jb,  < )
+IF_JUMP (jbe, <=)
+IF_JUMP (je,  ==)
+IF_JUMP (jne, !=)
+
+// Dummy functions
+bool cpu_call(CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    This->position++;
+    int new_position = *(int*)(This->program.chars + This->position);
+    This->position += sizeof (int);
+    if (!stack_push (&This->fu_stack, (float)This->position))
+        return false;
+    This->position = new_position;
+    //printf ("call %d\n", new_position);
+
+    return true;
+}
+bool cpu_err(CPU* This)
+{
+    printf ("*BEEP*\n");
+    return false;
+}
+bool cpu_ret(CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    float ret_position = 0;
+    if (!stack_pop (&This->fu_stack, &ret_position))
+        return false;
+    This->position = ret_position;
+    //printf ("ret %d\n", (int)ret_position);
+
+    return true;
+}
+bool cpu_end(CPU* This)
+{
+    return true;
+}
+bool cpu_pop(CPU* This)
+{
+    return false;
+}
+bool cpu_pop_mem(CPU* This)
+{
+    return false;
+}
+bool cpu_push_mem(CPU* This)
+{
+    return false;
+}
+
+bool cpu_set_program (CPU* This, const Buffer* program)
+{
+    buffer_destruct(&This->program);
+    if (!buffer_construct_copy(&This->program, program))
+        return false;
+    return true;
+}
 
 bool cpu_construct (CPU* This)
 {
     assert (This);
-    memset (This->registers, 0, sizeof (TYPE) * REGISTERS_NUMBER);
+    if (!buffer_construct_empty(&This->program, 1))
+        return false;
+    // The program begins with 'end'
+    This->program.chars[0] = 0;
+    This->position = 0;
+    memset (This->registers, 0, REG_SIZE * REG_NUMBER);
     if (!stack_construct(&This->stack))
     {
         cpu_destruct(This);
@@ -207,7 +321,9 @@ bool cpu_construct_copy(CPU* This, const CPU* other)
 {
     assert (This);
     ASSERT_OK(CPU, other);
-    memcpy (This->registers, other->registers, sizeof (TYPE) * REGISTERS_NUMBER);
+    buffer_construct_copy(&This->program, &other->program);
+    This->position = other->position;
+    memcpy (This->registers, other->registers, REG_SIZE * REG_NUMBER);
     if (!stack_construct_copy(&This->stack, &other->stack))
     {
         cpu_destruct(This);
@@ -221,7 +337,9 @@ bool cpu_construct_copy(CPU* This, const CPU* other)
 void cpu_destruct (CPU* This)
 {
     assert (This);
-    memset (This->registers, 0, sizeof (TYPE) * REGISTERS_NUMBER);
+    This->position = 0;
+    buffer_destruct(&This->program);
+    memset (This->registers, 0, REG_SIZE * REG_NUMBER);
     stack_destruct(&This->stack);
     This->state = false;
 }
@@ -229,7 +347,7 @@ void cpu_destruct (CPU* This)
 bool cpu_OK (const CPU* This)
 {
     assert (This);
-    return This->state && stack_OK(&This->stack);
+    return This->state && stack_OK(&This->stack) && buffer_OK (&This->program) && This->registers;
 }
 
 void cpu_dump_ (const CPU* This, const char name[])
@@ -243,15 +361,22 @@ void cpu_dump_ (const CPU* This, const char name[])
     printf ("{\n");
     printf ("    state = %d\n", This->state);
     printf ("    registers:\n");
-    for (size_t i = 0; i < REGISTERS_NUMBER; i++)
-        printf ("      [%lu] %d\n", i, This->registers[i]);
+    for (size_t i = 0; i < REG_NUMBER; i++)
+        printf ("      [%lu] %d\n", i, This->registers[i*REG_SIZE]);
+    printf ("    program:\n");
+    for (int i = 0; i < This->program.length; i ++)
+        printf ("%d ", (int)This->program.chars[i]);
+    printf ("\n    stack:\n");
     stack_dump(&This->stack);
     printf ("}\n");
 }
 
-bool cpu_push (CPU* This, TYPE value)
+bool cpu_push (CPU* This)
 {
     ASSERT_OK(CPU, This);
+    This->position ++;
+    TYPE value = *(TYPE*)(This->program.chars + This->position);
+    This->position += sizeof(TYPE);
 
     if (!stack_push(&This->stack, value))
     {
@@ -262,17 +387,48 @@ bool cpu_push (CPU* This, TYPE value)
     return true;
 }
 
-bool cpu_push_rx (CPU* This, enum REGISTERS registerN)
+bool cpu_dup (CPU* This)
 {
     ASSERT_OK(CPU, This);
-    return cpu_push(This, This->registers[registerN]);
+    TYPE top = 0;
+    if (!stack_pop(&This->stack, &top))
+    {
+        cpu_destruct(This);
+        return false;
+    }
+    if (!stack_push(&This->stack, top) || !stack_push(&This->stack, top))
+    {
+        cpu_destruct(This);
+        return false;
+    }
+    return true;
 }
 
-bool cpu_pop_rx (CPU* This, enum REGISTERS registerN)
+bool cpu_push_reg (CPU* This)
 {
     ASSERT_OK(CPU, This);
+    This->position ++;
+    char address = This->program.chars[This->position];
+    This->position ++;
 
-    if (!stack_pop(&This->stack, &This->registers[registerN]))
+    TYPE value = *(TYPE*)(This->registers + address);
+    if (!stack_push(&This->stack, value))
+    {
+        cpu_destruct(This);
+        return false;
+    }
+    ASSERT_OK(CPU, This);
+    return true;
+}
+
+bool cpu_pop_reg (CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    This->position ++;
+    char address = This->program.chars[This->position];
+    This->position ++;
+
+    if (!stack_pop(&This->stack, (TYPE*)(This->registers + address)))
     {
         cpu_destruct(This);
         ASSERT_OK(CPU, This);
@@ -387,146 +543,50 @@ bool cpu_out (CPU* This)
         ASSERT_OK(CPU, This);
         return false;
     }
-    printf ("%d\n", top);
+    printf ("%g\n", top);
     ASSERT_OK(CPU, This);
     return true;
 }
 
-bool cpu_execute (CPU* This, const int program[])
+bool cpu_in (CPU* This)
 {
-    size_t current = 0;
-    int positions[MAX_PROGRAM_LENGTH] = {};
-    build_map((const int*)program, positions);
+    ASSERT_OK(CPU, This);
+    TYPE input = 0;
 
-    while (program[current] != END)
+    scanf ("%f", &input);
+    if (!stack_push(&This->stack, input))
     {
-        switch (program[current])
-        {
-        case PUSH:
-            DPRINT_int(PUSH);
-            if (!cpu_push(This, program[++current]))
-                return false;
-            current++;
-            break;
-        case PUSH_RX:
-            DPRINT_int(PUSH_RX);
-            if (!cpu_push_rx(This, (enum CODE)program[++current]))
-                return false;
-            current++;
-            break;
-        case POP:
-            DPRINT_int(POP);
-            if (!cpu_pop_rx(This, (enum CODE)program[++current]))
-                return false;
-            current++;
-            break;
-        case ADD:
-            DPRINT_int(ADD);
-            if (!cpu_add(This))
-                return false;
-            current++;
-            break;
-        case SUB:
-            DPRINT_int(SUB);
-            if (!cpu_div(This))
-                return false;
-            current++;
-            break;
-        case MUL:
-            DPRINT_int(MUL);
-            if (!cpu_mul(This))
-                return false;
-            current++;
-            break;
-        case DIV:
-            DPRINT_int(DIV);
-            if (!cpu_div(This))
-                return false;
-            current++;
-            break;
-        case POW:
-            DPRINT_int(POW);
-            if (!cpu_pow(This))
-                return false;
-            current++;
-            break;
-        case JMP:
-            DPRINT_int(JMP);
-            current ++;
-            current = positions[program[current]];
-            break;
-        case JA:
-            ;
-            DPRINT_int(JA);
-            TYPE top = 0, previous = 0;
-            if (!stack_pop(&This->stack, &top) || !stack_pop(&This->stack, &previous))
-                return false;
-            current++;
-            if (top > previous)
-                current = positions[program[current]];
-            else
-                current++;
-            break;
-        case OUT:
-            DPRINT_int(OUT);
-            if (!cpu_out(This))
-                return false;
-            current++;
-            break;
-        default:
-            return false;
-        }
-        //cpu_dump(This);
-        //getchar();
+        cpu_destruct(This);
+        ASSERT_OK(CPU, This);
+        return false;
     }
+    ASSERT_OK(CPU, This);
+    return true;
+}
+// TODO: all functions are written in processor, we are only calling them
+//from define of each CMD_INFO with right argument
+bool cpu_execute (CPU* This)
+{
+    while (This->program.chars[This->position] != 0)
+    {
+        bool is_done = false;
+#define CMD(name, key, shift, arguments) \
+        if (!is_done && This->program.chars[This->position] == key)\
+        {\
+            /*printf ("EXE: " #name "\n");*/\
+            if (!cpu_ ## name (This))\
+                return false;\
+            /*stack_dump (&This->stack);*/\
+            This->position += shift;\
+            is_done = true;\
+        }
+
+#include "commands.h"
+#undef CMD
+    }
+
     return true;
 }
 
-void build_map (const int program[], int map[])
-{
-    size_t current = 0, current_map = 0;
-    while (program[current] != END)
-    {
-        map[current_map] = current;
-        current_map++;
-        switch (program[current])
-        {
-        case PUSH:
-            current += 2;
-            break;
-        case PUSH_RX:
-            current += 2;
-            break;
-        case POP:
-            current += 2;
-            break;
-        case ADD:
-            current++;
-            break;
-        case SUB:
-            current++;
-            break;
-        case MUL:
-            current++;
-            break;
-        case DIV:
-            current++;
-            break;
-        case POW:
-            current++;
-            break;
-        case JMP:
-            current += 2;
-            break;
-        case JA:
-            ;
-            current += 2;
-            break;
-        case OUT:
-            current++;
-            break;
-        }
-    }
-    map[current_map] = current;
-}
+
 #endif // CPU_H_INCLUDED
