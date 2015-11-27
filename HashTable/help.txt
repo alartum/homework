@@ -1,0 +1,11 @@
+HashTable builds various hash tables of the given document. The result of measurements is written to the .csv file for charts building purposes.
+The right way to call it:
+    HashTable text.txt [info.csv]
+    
+    (1)'text.txt' stands for text file to be tested;
+    (2)'info.csv' stands for the info output file and may not be given.
+    The result is written to 'info.csv' in this case.
+    
+Other possible keys:
+    --help to get help
+    --version to get version
