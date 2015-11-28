@@ -7,7 +7,6 @@
 
 #include <stdio.h>
 #include "mylib.h"
-#include "exit_codes.h"
 #include <string.h>
 #include <limits.h>
 #include "CPU.h"

@@ -39,6 +39,8 @@ CMD (div, 6, 1, ARG_NO)
 CMD (pow, 7, 1, ARG_NO)
 CMD (ret, 8, 0, ARG_NO)
 CMD (dup, 9, 1, ARG_NO)
+CMD (in ,10, 1, ARG_NO)
+CMD (abs,11, 1, ARG_NO)
 
 //^^^^^^^^^^^^^^^^^^^^^^^^
 // 20~39 OVERLOADED commands

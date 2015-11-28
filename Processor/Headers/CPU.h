@@ -548,11 +548,32 @@ bool cpu_out (CPU* This)
     return true;
 }
 
+bool cpu_abs (CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    TYPE top = 0;
+    if (!stack_pop(&This->stack, &top))
+    {
+        cpu_destruct(This);
+        ASSERT_OK(CPU, This);
+        return false;
+    }
+    if (!stack_push(&This->stack, fabs(top)))
+    {
+        cpu_destruct(This);
+        ASSERT_OK(CPU, This);
+        return false;
+    }
+    ASSERT_OK(CPU, This);
+    return true;
+}
+
 bool cpu_in (CPU* This)
 {
     ASSERT_OK(CPU, This);
     TYPE input = 0;
 
+    printf (">");
     scanf ("%f", &input);
     if (!stack_push(&This->stack, input))
     {
