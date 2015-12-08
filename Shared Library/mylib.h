@@ -23,7 +23,7 @@ enum MAIN_ERRORS
 };
 
 
-#define BOOM() printf("BOOM!\n")
+#define BOOM() printf("BOOM! from %s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__)
 #define BADABOOM(code) printf("BADABOOM " ## code ## "\n")
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define open_file(file, name, mode, error_message) \
