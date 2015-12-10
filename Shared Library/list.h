@@ -98,9 +98,9 @@ typedef struct
     bool is_valid;
 } ListHead;
 /**
-*@brief Standard list head constructor. Sets the first element to the
+*@brief Standard list head constructor.
 *
-*Standard list head constructor. Sets the first element to the given.
+*Standard list head constructor.
 *@param This Pointer to the head to be constructed.
 *@param first Pointer to the element to be put first
 *@return 1 (true) if success, 0 (false) otherwise.
@@ -177,7 +177,8 @@ bool list_head_add (ListHead* This, const char word[])
     list_element_construct(new_element, word);
     if (current)
     {
-        while (current->next)
+        ListElement* prev = current;
+        while (current)
         {
             if (!strcmp (current->word, word))
             {
@@ -185,9 +186,10 @@ bool list_head_add (ListHead* This, const char word[])
                 This->amount ++;
                 return true;
             }
+            prev = current;
             current = current->next;
         }
-        return (list_element_insert_after(new_element, current));
+        return (list_element_insert_after(new_element, prev));
     }
     else
     {

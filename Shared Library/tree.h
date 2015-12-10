@@ -317,11 +317,12 @@ bool tree_node_show_dot (const TreeNode* This)
     if (!This)
         return false;
     open_file(dot_file, "dump.dot", "w", "File error has occured while dumping!");
-    fprintf (dot_file, "digraph G {\n");
+    fprintf (dot_file, "digraph G {\n\tbgcolor = \"#FCFDFE\"\n");
     bool is_ok = tree_node_to_dot(This, dot_file);
     fprintf (dot_file, "}\n");
     close_file(dot_file);
     system("xdot dump.dot");
+    system("rm dump.dot");
     return is_ok;
 }
 
@@ -361,7 +362,10 @@ Expression tree_node_to_tex__ (const TreeNode* This)
     {
     case NUM:
         ;
-        sprintf (word, "%g", This->value);
+        if (This->value < 0)
+            sprintf (word, "(%g)", This->value);
+        else
+            sprintf (word, "%g", This->value);
         result.type = num;
         result.word = strdup(word);
         break;
@@ -404,8 +408,10 @@ Expression tree_node_to_tex__ (const TreeNode* This)
             result.word = new_string;
             break;
         case '*':
-            if (right.type == var)
-                 strcat (new_string, left.word);
+            if (!strcmp(left.word, "(-1)"))
+                strcat (new_string, "-");
+            else if (right.type == var || right.type == pew)//don't put cdot
+                strcat (new_string, left.word);
             else
             {
                 if (left.type == sum)
@@ -417,6 +423,7 @@ Expression tree_node_to_tex__ (const TreeNode* This)
                 }
                 else
                     strcat (new_string, left.word);
+
                 strcat (new_string, " \\cdot ");
             }
 
@@ -450,9 +457,12 @@ Expression tree_node_to_tex__ (const TreeNode* This)
                 strcat (new_string, left.word);
                 strcat (new_string, "\\right)");
             }
-            strcat (new_string, "^{");
-            strcat (new_string, right.word);
-            strcat (new_string, "}");
+            if (strcmp (right.word, "1"))
+            {
+                strcat (new_string, "^{");
+                strcat (new_string, right.word);
+                strcat (new_string, "}");
+            }
             result.type = pew;
             result.word = new_string;
             break;
@@ -482,7 +492,7 @@ Expression tree_node_to_tex__ (const TreeNode* This)
         }
 
         free(fu_arg.word);
-        result.type = var;
+        result.type = pew;
         result.word = new_string_;
         break;
     default:
@@ -518,9 +528,9 @@ bool tree_node_show_tex (const TreeNode* This)
         return false;
     open_file(tex_file, "./Tex/temp.tex", "w", "Can't find ./Tex directory\n");
     Buffer format = {};
-    if (!buffer_construct(&format, "./Tex/format.tex"))
+    if (!buffer_construct(&format, "./format.tex"))
     {
-        printf ("Please, provide ./Tex/format.tex file.\n");
+        printf ("Please, provide ./format.tex file.\n");
         return false;
     }
     fprintf (tex_file, "%s\n\n\\begin{document}\n", format.chars);
@@ -528,7 +538,7 @@ bool tree_node_show_tex (const TreeNode* This)
     fprintf (tex_file, "%s", tree_node_to_tex(This, true));
     fprintf (tex_file, "\\end{document}\n");
     close_file(tex_file);
-    system ("pdflatex -output-directory=./Tex ./Tex/temp.tex");
+    system ("pdflatex -output-directory=./Tex -interaction=batchmode ./Tex/temp.tex");
     system ("rm ./Tex/temp.tex");
     system ("qpdfview ./Tex/temp.pdf");
     return true;

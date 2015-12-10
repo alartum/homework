@@ -24,7 +24,7 @@ enum MAIN_ERRORS
 
 
 #define BOOM() printf("BOOM! from %s, %s, %d\n", __FUNCTION__, __FILE__, __LINE__)
-#define BADABOOM(code) printf("BADABOOM " ## code ## "\n")
+#define BADABOOM(code) printf("BADABOOM " #code "\n")
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #define open_file(file, name, mode, error_message) \
     FILE *(file) = fopen (name, mode);\
@@ -176,5 +176,18 @@ int print_help ()
 #endif // DEBUG
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+int gcd (int a, int b)
+{
+    int c;
+    while ( a != 0 )
+    {
+        c = a;
+        a = b%a;
+        b = c;
+    }
+
+    return b;
+}
 
 #endif // MYLIB_H_INCLUDED

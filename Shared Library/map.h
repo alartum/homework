@@ -138,7 +138,7 @@ bool differ_map_add_node (DifferMap* This, const char key[], const TreeNode* val
     return true;
 }
 
-TreeNode* differ_map_get (DifferMap* This, const char key[])
+TreeNode* differ_map_get (const DifferMap* This, const char key[])
 {
     ASSERT_OK(DifferMap, This);
     assert (key);
@@ -292,5 +292,115 @@ char* map_get (Map* This, const char key[])
             return strdup(This->values[i]);
 
     return NULL;
+}
+
+/// More comfortable dump
+#define ValMap_dump(This) val_map_dump_(This, #This)
+/// To be stylish
+#define val_map_dump(This) ValMap_dump(This)
+/// To be stylish
+#define ValMap_OK(This) val_map_OK(This)
+
+typedef struct
+{
+    char **keys;
+    float *values;
+    size_t amount;
+
+    size_t max_amount;
+    bool state;
+} ValMap;
+
+
+bool val_map_OK (const ValMap* This)
+{
+    assert (This);
+    return This->state;
+}
+
+void val_map_destruct (ValMap* This)
+{
+    assert (This);
+    for (int i = 0; i < This->amount; i++)
+    {
+        if (This->keys[i])
+            free(This->keys[i]);
+    }
+    if (This->keys)
+        free(This->keys);
+    if (This->values)
+        free(This->values);
+    This->amount = 0;
+    This->state = false;
+}
+bool val_map_construct (ValMap* This, size_t amount)
+{
+    assert (This);
+    This->amount = 0;
+    This->max_amount = amount;
+    This->keys = (char**)calloc(amount, sizeof(char*));
+    if (!This->keys)
+    {
+        val_map_destruct(This);
+        return false;
+    }
+    This->values = (float*)calloc(amount, sizeof(float));
+    if (!This->values)
+    {
+        val_map_destruct(This);
+        return false;
+    }
+    This->state = true;
+    return true;
+}
+
+
+void val_map_dump_ (const ValMap* This, const char name[])
+{
+    assert (This);
+    printf ("%s = Map (", name);
+    if (val_map_OK(This))
+        printf ("ok)\n");
+    else
+        printf ("ERROR)\n");
+    printf ("{\n");
+    printf ("\tamount = %lu\n", This->amount);
+    printf ("\tmax_amount = %lu\n", This->max_amount);
+    printf ("\tItems:\n");
+    for (int i = 0; i < This->amount; i++)
+        printf ("\t   [%s] : \"%g\"\n", This->keys[i], This->values[i]);
+    printf ("}\n");
+}
+
+bool val_map_add (ValMap* This, const char key[], const float value)
+{
+    ASSERT_OK(DifferMap, This);
+    assert (key);
+    if (This->amount >= This->max_amount)
+    {
+        val_map_destruct(This);
+        return false;
+    }
+    //else
+    for (int i = 0; i < This->amount; i++)
+        if (!strcmp(This->keys[i], key))
+            return true;
+    //if key is not present
+    This->keys[This->amount] = strdup(key);
+    This->values[This->amount] = value;
+    This->amount++;
+
+    return true;
+}
+
+float val_map_get (ValMap* This, const char key[])
+{
+    ASSERT_OK(Map, This);
+    assert (key);
+    for (int i = 0; i < This->amount; i++)
+        if (!strcmp(This->keys[i], key))
+            return This->values[i];
+
+    return 0;
 }
 #endif // MAP_H_INCLUDED

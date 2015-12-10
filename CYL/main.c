@@ -13,40 +13,7 @@
 #include "tree.h"
 #include "parsing.h"
 #include "differ.h"
-
-int send_email (const char header_file[], const char message_file[], const char attach_file[], const char attach_name[])//const char whom[], const char attachment[])
-{
-    Buffer header_text = {};
-    buffer_construct(&header_text, header_file);
-    open_file (temp_message, "./Mail/temp_message", "w", "Can't open file!");
-    char to_whom[NAME_MAX];
-    sscanf (header_text.chars, "To:%s", to_whom);
-    fprintf (temp_message, "%sMime-Version: 1.0\nContent-Type: multipart/mixed; boundary=\"newpart\"\n--newpart\n", header_text.chars);
-    fprintf (temp_message, "Content-Type: text/plain; charset=utf-8\n\n");
-    Buffer message_text = {};
-    buffer_construct(&message_text, message_file);
-    if (attach_file)
-    {
-        fprintf (temp_message, "%s\n\n--newpart\n", message_text.chars);
-        fprintf (temp_message, "Content-Type: application/octet-stream\n");
-        fprintf (temp_message, "Content-Transfer-Encoding: base64\n");
-        fprintf (temp_message, "Content-Disposition: attachment; filename=\"%s\"\n", attach_name);
-    }
-    close_file(temp_message);
-    char command[100];
-    strcat (command, "base64 ");
-    strcat (command, attach_file);
-    strcat (command, " >> ./Mail/temp_message");
-    system (command);
-    command[0] = '\0';
-    strcat (command, "ssmtp ");
-    strcat (command, to_whom);
-    strcat (command, " < ./Mail/temp_message");
-    system (command);
-    system ("rm ./Mail/temp_message");
-
-    return 0;
-}
+#include "mail.h"
 
 int main (int argc, char* argv[])
 {
@@ -76,13 +43,26 @@ int main (int argc, char* argv[])
     if (!root)
         return WRONG_RESULT;
     //tree_node_show_dot(root);
-    TreeNode* derivative = build_part_derivative(root, "x", "derivatives.txt");
-    if (!derivative)
+    DifferMap* derivatives = build_all_derivatives(root, "derivatives.txt", false, false);
+    if (!derivatives)
         return WRONG_RESULT;
-    tree_node_show_dot(derivative);
+    ValMap values = {};
+    val_map_construct(&values, 2);
+    val_map_add(&values, "x", 0.5);
+    val_map_add(&values, "y", 3);
+    TreeNode* result = tree_substitute(derivatives->values[0], &values);
+    tree_node_show_dot(result);
+    TreeNode* res_smpl = tree_calculate(result, true);
+    tree_node_show_tex(result);
+    tree_node_show_dot(res_smpl);
+
+    //tree_node_show_dot(derivative);
     tree_node_destruct(root);
-    tree_node_destruct(derivative);
- //   send_email("./Mail/header", "./Mail/message", "./Tex/temp.pdf", "Лаба.pdf");
+    differ_map_destruct(derivatives);
+    val_map_destruct(&values);
+
+    free (derivatives);
+    //send_email("./Mail/header", "./Mail/message", "./Tex/temp.pdf", "Лаба.pdf");
 
     return NO_ERROR;
 }
