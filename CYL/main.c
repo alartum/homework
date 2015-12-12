@@ -5,6 +5,8 @@
 /// Version
 #define VERSION "1"
 
+//#define DEBUG
+
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -39,40 +41,14 @@ int main (int argc, char* argv[])
     srand (time(NULL));
     //DANGER! RANDOM. KEEP AWAY.
 
-    Buffer input = {};
-    buffer_construct(&input, file_name);
-    TreeNode* root = tree_node_from_string(input.chars);
-    buffer_destruct(&input);
-    if (!root)
-        return WRONG_RESULT;
-    DifferMap d_map = {};
-    if (!differ_map_construct_filename(&d_map, "derivatives.txt"))
-        return NULL;
-
-    open_file(tex_file, "laba.tex", "w", "Oh, mega-crap!");
-    tex_init(tex_file, "format.tex");
-
-    DifferMap* derivatives = build_all_derivatives(root, true, &d_map, tex_file);
-    if (!derivatives)
-        return WRONG_RESULT;
-
-    ValMap values = {};
-    val_map_construct(&values, 2);
-    val_map_add(&values, "x", 0.5);
-    val_map_add(&values, "y", 3);
-
-    //TreeNode* result = tree_substitute(derivatives->values[0], &values);
-    val_map_destruct(&values);
-
-    //TreeNode* res_smpl = tree_calculate(result, true, tex_file, NULL);
-
-    tree_node_destruct(&root);
-    differ_map_destruct(derivatives);
-    tex_finish(tex_file);
+    open_file(info_file, "lab_info", "r", "Something is wrong!");
+    open_file(tex_file, "laba.tex", "w", "Something is wrong!");
+    write_lab(info_file, tex_file);
     close_file(tex_file);
+    close_file(info_file);
+
+    send_email("./Mail/header", "./Mail/message", "./Tex/show_tex_file.pdf", "Лаба.pdf");
     show_tex_file("laba.tex");
-    free (derivatives);
-    //send_email("./Mail/header", "./Mail/message", "./Tex/temp.pdf", "Лаба.pdf");
 
     return NO_ERROR;
 }

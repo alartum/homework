@@ -287,7 +287,7 @@ void map_dump_ (const Map* This, const char name[])
 
 bool map_add (Map* This, const char key[], const char value[])
 {
-    ASSERT_OK(DifferMap, This);
+    ASSERT_OK(Map, This);
     assert (key);
     assert (value);
     if (This->amount >= This->max_amount)
@@ -399,7 +399,7 @@ void val_map_dump_ (const ValMap* This, const char name[])
 
 bool val_map_add (ValMap* This, const char key[], const float value)
 {
-    ASSERT_OK(DifferMap, This);
+    ASSERT_OK(ValMap, This);
     assert (key);
     if (This->amount >= This->max_amount)
     {
@@ -420,7 +420,7 @@ bool val_map_add (ValMap* This, const char key[], const float value)
 
 float val_map_get (ValMap* This, const char key[])
 {
-    ASSERT_OK(Map, This);
+    ASSERT_OK(ValMap, This);
     assert (key);
     for (int i = 0; i < This->amount; i++)
         if (!strcmp(This->keys[i], key))

@@ -54,7 +54,10 @@ void replace_nodes (TreeNode* start, const char word[],
                     const TreeNode* replacement)
 {
     if (start->type == VAR && !strcmp (start->word, word))
+    {
+       // printf ("Replacing %s\n", word);
         replace_node(&start, replacement);
+    }
     else
     {
         if (start->left)
@@ -299,7 +302,7 @@ bool tree_simplify__ (TreeNode** source_pointer,
             int amount = 0;
             for (; comments[amount]; amount++);
             const char* rand_comment = comments[rand() % amount];
-            fprintf (tex_file, "%s\\begin{align*}\n%s = %s\n\\end{align*}",
+            fprintf (tex_file, "%s\\begin{dmath*}\n%s = %s\n\\end{dmath*}",
                    rand_comment                                           ,
                    tree_node_to_tex(source, false)                        ,
                    tree_node_to_tex(new_node, false)                      );
@@ -333,6 +336,8 @@ TreeNode* tree_calculate (const TreeNode* source,
         return NULL;
     while (is_changed)
     {
+        //printf ("Iterating\n");
+        //tree_node_show_dot(calculated);
         is_changed = tree_calculate__(&calculated, comp_fu, tex_file, comments);
     }
 
@@ -469,7 +474,7 @@ TreeNode* build_part_derivative__ (const TreeNode* source,
     }
 
     if (new_node)
-        fprintf (tex_file, "%s\\begin{align*}\n\\left(%s\\right)_{%s}' = %s\n\\end{align*}",
+        fprintf (tex_file, "%s\\begin{dmath*}\n\\left(%s\\right)_{%s}^{\\prime} = %s\n\\end{dmath*}",
                            comment                                    ,
                            tree_node_to_tex(source, false)            ,
                            argument                                   ,
@@ -491,17 +496,36 @@ TreeNode* build_part_derivative (const TreeNode* source ,
     if (tex_file)
     {
         char line[] = "$\\blacktriangleright$";
-        fprintf (tex_file, "%sНайдём частную производную следующего выражения по %s:\n%s\n", line, argument, tree_node_to_tex(source, true));
+        fprintf (tex_file, "%sНайдём частную производную следующего выражения по %s:\n \
+                            \\begin{dmath*}\n \
+                            \\left(%s\\right)_{%s}^{\\prime}\n \
+                            \\end{dmath*}\n\n", line, argument, tree_node_to_tex(source, false), argument);
     }
     char** comments = comments_get("comments.txt");
     TreeNode* simple_source = tree_simplify(source, comp_fu, tex_file, (const char**)comments);
     if (tex_file)
-        fprintf (tex_file, "Упростив, получим: \n%s\n", tree_node_to_tex(simple_source, true));
+    {
+        char line[] = "$\\vartriangleright$";
+        fprintf (tex_file, "%sУпростив, получим: \n \
+                            \\begin{dmath*}\n \
+                            \\left(%s\\right)_{%s}^{\\prime}\n \
+                            \\end{dmath*}\n\n", line, tree_node_to_tex(source, false), argument);
+        fprintf (tex_file, "%sПродифференцируем.\n\n", line);
+    }
+
     TreeNode* part_derivative = build_part_derivative__ (simple_source, argument, tex_file, deriv);
-    tree_node_destruct(&simple_source);
     if (tex_file)
-        fprintf (tex_file, "Итак, производная равна:\n%s\n", tree_node_to_tex(part_derivative, true));
-    //tree_node_show_dot(part_derivative);
+    {
+        char line[] = "$\\vartriangleright$";
+        /*fprintf (tex_file, "%sИтак, производная равна:\n \
+                            \\begin{dmath*}\n \
+                            \\left(%s\\right)_{%s}^{\\prime} = %s\n \
+                            \\end{dmath*}\n\n", line, tree_node_to_tex(simple_source, false), argument, tree_node_to_tex(part_derivative, false));
+        */
+        fprintf (tex_file, "%sУпростим полученную производную.\n\n", line);
+    }
+    tree_node_destruct(&simple_source);
+        //tree_node_show_dot(part_derivative);
     TreeNode* simplified = tree_simplify(part_derivative, comp_fu, tex_file, (const char**)comments);
     //tree_node_dump_r(simplified);
     //printf ("DONE\n");
@@ -514,8 +538,11 @@ TreeNode* build_part_derivative (const TreeNode* source ,
 
     if (tex_file)
     {
-        char line[] = "$\\blacktriangleright$";
-        fprintf (tex_file, "%sНаконец, получаем окончательный ответ:\n%s\n\n", line, tree_node_to_tex(simplified, true));
+        char line[] = "$\\vartriangleright$";
+        fprintf (tex_file, "%sНаконец, получаем окончательный ответ:\n \
+                            \\begin{dmath*}\n \
+                            \\left(%s\\right)_{%s}^{\\prime} = %s\n \
+                            \\end{dmath*}\n\n", line, tree_node_to_tex(source, false), argument, tree_node_to_tex(simplified, false));
     }
     return simplified;
 }
@@ -564,14 +591,130 @@ DifferMap* build_all_derivatives (const TreeNode* source ,
 
 TreeNode* tree_substitute (const TreeNode* source, const ValMap* variables)
 {
+    ASSERT_OK(TreeNode, source);
+    ASSERT_OK(ValMap, variables);
     TreeNode* new_tree = tree_node_full_copy(source);
     for (size_t i = 0; i < variables->amount; i++)
     {
         TreeNode* replacement = _NUM (variables->values + i);
+        //printf ("Replacing <%s> with %g\n", variables->keys[i], variables->values[i]);
         replace_nodes(new_tree, variables->keys[i], replacement);
         tree_node_destruct(&replacement);
     }
 
     return new_tree;
+}
+
+TreeNode* tree_build_error (const DifferMap* part_deriv)
+{
+    ASSERT_OK(DifferMap, part_deriv);
+    if (part_deriv->amount < 1)
+        return NULL;
+
+    TreeNode* top_node = NULL;
+    for (int i = 0; i < part_deriv->amount; i++)
+    {
+        #define _CPY(node) tree_node_full_copy(node)
+        float two = 2;
+        char* var_der = (char*)calloc(strlen(part_deriv->keys[i]) + 3, sizeof(*var_der));
+        strcat (var_der, "d_");
+        strcat (var_der, part_deriv->keys[i]);
+        TreeNode* summant = _POW(_MUL(_CPY(part_deriv->values[i]), _VAR(var_der)), _NUM(&two));
+        free (var_der);
+        #undef _CPY
+        if (i == 0)
+            top_node = summant;
+        else
+            top_node = _ADD(top_node, summant);
+
+    }
+    float half = 0.5;
+    top_node = _POW (top_node, _NUM(&half));
+    //tree_node_show_dot(top_node);
+    top_node = tree_simplify(top_node, true, NULL, NULL);
+    return top_node;
+}
+
+void write_lab (FILE* info_file, FILE* tex_file)
+{
+    assert (tex_file);
+    assert (info_file);
+    Buffer info = {};
+    buffer_construct_file(&info, info_file);
+
+    char* eq = strchr (info.chars, '=');
+    *eq = '\0';
+    eq++;
+
+    char* to_find = info.chars;
+    char* formula = strtok (eq, "\n");
+    //printf ("<%s> = <%s>\n", to_find, formula);
+
+    ListHead vars_data = {};
+    list_head_construct(&vars_data);
+    char* var_info = strtok (NULL, "\n");
+    while (var_info)
+    {
+        list_head_add(&vars_data, var_info);
+        var_info = strtok (NULL, "\n");
+    }
+    ValMap vars = {};
+    val_map_construct(&vars, vars_data.amount);
+    for (ListElement* current = vars_data.first; current; current = current->next)
+    {
+        char* var_name = current->word;
+        char* val_char = strrchr (current->word, '=');
+        *val_char = '\0';
+        val_char++;
+        float value = 0;
+        sscanf (val_char, "%f", &value);
+        val_map_add(&vars, var_name, value);
+    }
+    list_head_destruct(&vars_data);
+
+    tex_init(tex_file, "format.tex");
+    TreeNode* root = tree_node_from_string(formula);
+    fprintf (tex_file, "Вычислим значение %s по следующей формуле:\n%s", to_find, tree_node_to_tex(root, true));
+    fprintf (tex_file, "Запишем данные в таблицу:\n\n");
+    fprintf (tex_file, "\\begin{tabular}{|c|c|}\n \\hline\n Величина&Значение\\\\\n \\hline\n");
+    for (int i = 0; i < vars.amount; i++)
+        fprintf (tex_file, "$%s$&$%g$\\\\\n\\hline\n", vars.keys[i], vars.values[i]);
+    fprintf (tex_file, "\\end{tabular}\n\n");
+    fprintf (tex_file, "Найдём погрешность. Для этого построим частные производные.\n\n");
+
+    DifferMap d_map = {};
+    if (!differ_map_construct_filename(&d_map, "derivatives.txt"))
+        return NULL;
+
+    DifferMap* derivatives = build_all_derivatives(root, true, &d_map, tex_file);
+    if (!derivatives)
+        return;
+
+    TreeNode* root_calc = tree_substitute(root, &vars);
+    TreeNode* root_calc_done = tree_calculate(root_calc, true, NULL, NULL);
+    tree_node_destruct(&root);
+    TreeNode* error_node = tree_build_error(derivatives);
+    fprintf (tex_file, "Тогда погрешность может быть вычислена по следующей формуле:\n\n");
+    fprintf (tex_file, "\\begin{dmath*}\n \
+                        \\sigma_%s = %s\n \
+                        \\end{dmath*}\n\n", to_find, tree_node_to_tex(error_node, false));
+
+    TreeNode* result = tree_substitute(error_node, &vars);
+    val_map_destruct(&vars);
+    tree_node_destruct(&error_node);
+
+    TreeNode* res_calc = tree_calculate(result, true, tex_file, NULL);
+    fprintf (tex_file, "$\\rhd$Вычисляя, находим: ");
+    fprintf (tex_file, "$\\sigma_%s = %g$.\n\n", to_find, res_calc->value);
+    differ_map_destruct(derivatives);
+    //tree_node_show_dot(res_calc);
+    fprintf (tex_file, "$\\blacktriangleright$Таким образом получаем, что $%s = %.2g \\pm %.2g$\n\n", to_find, root_calc_done->value, res_calc->value);
+    tex_finish(tex_file);
+    tree_node_destruct(&root_calc);
+    tree_node_destruct(&root_calc_done);
+    tree_node_destruct(&res_calc);
+    tree_node_destruct(&result);
+    buffer_destruct(&info);
+    free (derivatives);
 }
 #endif // DIFFER_H_INCLUDED

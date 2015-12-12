@@ -452,7 +452,9 @@ Expression tree_node_to_tex__ (const TreeNode* This)
             result.word = new_string;
             break;
         case '*':
-            if (!strcmp(left.word, "(-1)"))
+            if (!strcmp(left.word, "1"))
+                ;
+            else if (!strcmp(left.word, "(-1)"))
                 strcat (new_string, "-");
             else if ((right.type == var || right.type == pew) && (left.type != pew))//don't put cdot
                 strcat (new_string, left.word);
@@ -553,9 +555,9 @@ char* tree_node_to_tex (const TreeNode* This, bool new_line)
     if (new_line)
     {
         //align*~dmath and \nonumber at the end
-        strcat (tex_string, "\\begin{align*}\n");
+        strcat (tex_string, "\\begin{dmath*}\n");
         strcat (tex_string, tex_exp.word);
-        strcat (tex_string, "\\end{align*}\n");
+        strcat (tex_string, "\\end{dmath*}\n");
     }
     else
     {
