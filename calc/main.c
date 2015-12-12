@@ -1,18 +1,30 @@
 #include <stdio.h>
 #include <assert.h>
+#include <ctype.h>
+#include <string.h>
+#include <math.h>
 
 // Pointer to the current symbol
 char* s = NULL;
 char state = 1;
+#define MAX_WORD 256
 
-//P::= '('E')' | N
-int getP();
-//N::=['0'-'9']*
-int getN();
-//E::= T(['+', '-']T)*
-int getE();
-//T::= P(['*', '/']P)*
-int getT();
+//CHARED::= NAME+BRACKETS | NAME
+int getCHARED();
+//MIXED::= CHARED | BRACKETS | NUMBER
+int getMIXED();
+//NAME::=['A'-'Z', 'a'-'z']+['0'-'9']*
+int getNAME();
+//NUMBER::=['0'-'9']
+int getNUMBER();
+//SUM::= MULT(['+', '-']MULT)*
+int getSUM();
+//MULT::= POW(['*', '/']POW)*
+int getMULT();
+//BRACKETS::= '('SUM')'
+int getBRACKETS();
+//POW::= MIXED([^]MIXED)*
+int getPOW();
 //Control sequence
 int getG0(const char* str);
 
@@ -29,50 +41,61 @@ int main (int argc, char* argv[])
     return 0;
 }
 
-
-
-//N::=['0'-'9']*
-int getN()
+int getNUMBER()
 {
     int val = 0;
-    while ('0' <= *s && *s <= '9')
+    char* saved = s;
+    while (isdigit(*s))
     {
         val = 10*val + *s - '0';
         s++;
     }
-
+    if (saved != s)
+        printf ("NUMBER  (%d)\n", val);
     return val;
 }
 
 //E::= T(['+', '-']T)*
-int getE()
+int getSUM()
 {
-    int val = getT();
+    int val = getMULT();
     while (*s == '-' || *s == '+')
     {
         char op = *s++;
-        int val2 = getT();
+        int val2 = getMULT();
         if (op == '+')
+        {
+            printf ("SUM  (%d)+(%d)\n", val, val2);
             val += val2;
+        }
         else if (op == '-')
+        {
+            printf ("SUM  (%d)-(%d)\n", val, val2);
             val -= val2;
+        }
     }
 
     return val;
 }
 
 //T::= P(['*', '/']P)*
-int getT()
+int getMULT()
 {
-    int val = getP();
+    int val = getPOW();
     while (*s == '*' || *s == '/')
     {
         char op = *s++;
-        int val2 = getP();
+        int val2 = getPOW();
         if (op == '*')
+        {
+            printf ("MULT  (%d)*(%d)\n", val, val2);
             val *= val2;
+        }
         else if (op == '/')
+        {
+            printf ("MULT  (%d)/(%d)\n", val, val2);
             val /= val2;
+        }
     }
 
     return val;
@@ -82,24 +105,97 @@ int getT()
 int getG0(const char* str)
 {
     s = (char*)str;
-    int val = getE();
+    int val = getSUM();
     assert (*s == 0);
 
     return val;
 }
 
-//P::= '('E')' | N
-int getP()
+//P::= N | B | F
+int getMIXED()
+{
+    char* saved = s;
+
+    int val = getNUMBER();
+    if (saved != s)
+        return val;
+
+    val = getBRACKETS();
+    if (saved != s)
+        return val;
+
+    return getCHARED();
+}
+
+int getNAME()
+{
+    unsigned current = 0;
+    char word[MAX_WORD] = {};
+    while (isalpha(*s) || *s == '_')
+    {
+        word[current] = *s;
+        s++;
+        current++;
+    }
+    while (isdigit(*s))
+    {
+        word[current] = *s;
+        s++;
+        current++;
+    }
+    word[current] = '\0';
+    printf ("NAME  \"%s\"\n", word);
+
+    return 0;
+}
+
+int getCHARED()
+{
+    char* saved = s;
+
+    getNAME();
+    if (saved == s)
+        return 0;
+
+    saved = s;
+    int value = getBRACKETS();
+    if (saved != s)
+    {
+        printf ("CHARED function\n");
+
+        return value;
+    }
+
+    printf ("CHARED variable\n");
+
+    return 0;
+}
+
+int getBRACKETS()
 {
     if (*s == '(')
     {
         s++;
-        int val = getE();
+        int val = getSUM();
         assert (*s == ')');
         s++;
 
         return val;
     }
     else
-        return getN();
+        return 0;
+}
+
+int getPOW()
+{
+    int val = getMIXED();
+    while (*s == '^')
+    {
+        s++;
+        int val2 = getMIXED();
+        printf ("POW  (%d)^(%d)\n", val, val2);
+        val = (int)pow ((double)val, (double)val2);
+    }
+
+    return val;
 }
