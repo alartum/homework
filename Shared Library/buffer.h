@@ -3,6 +3,9 @@
 
 #include <string.h>
 #include <stdbool.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <errno.h>
 
 typedef struct
 {
@@ -73,6 +76,45 @@ void buffer_dump (const Buffer* This)
         printf (">\n");
     }
     printf ("}\n");
+}
+
+bool buffer_construct_file (Buffer* This, FILE* file)
+{
+    assert (This);
+    assert (file);
+
+    #define BUF_ERROR() \
+    {\
+        buffer_destruct (This);\
+        return false;\
+    }
+
+    if (fseek (file, 0, SEEK_END)) // writes to errno too
+        BUF_ERROR();
+    This->length = ftell (file);
+
+    if (errno || This->length == 0)
+    {
+        errno = EIO;
+        BUF_ERROR();
+    }
+    This->chars = (char*) calloc (This->length, sizeof (char));
+    if (!This->chars)
+    {
+        errno = ENOMEM;
+        BUF_ERROR();
+    }
+
+    rewind (file);
+    if (fread (This->chars, sizeof (char), This->length, file) != This->length)
+    {
+        errno = EIO;
+        BUF_ERROR();
+    }
+
+    #undef BUF_ERROR
+
+    return true;
 }
 
 int buffer_construct (Buffer* This, const char filename[])

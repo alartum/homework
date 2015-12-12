@@ -42,7 +42,7 @@ void differ_map_destruct (DifferMap* This)
     {
         if (This->keys[i])
             free(This->keys[i]);
-        tree_node_destruct(This->values[i]);
+        tree_node_destruct(&This->values[i]);
     }
     if (This->keys)
         free(This->keys);
@@ -149,12 +149,37 @@ TreeNode* differ_map_get (const DifferMap* This, const char key[])
     return NULL;
 }
 
-bool differ_map_construct_from_file(DifferMap* This, const char filename[])
+bool differ_map_construct_filename(DifferMap* This, const char filename[])
 {
     assert(This);
     assert(filename);
     Buffer input = {};
     buffer_construct(&input, filename);
+    size_t Nfunctions = 0;
+    for (int i = 0; i < input.length; i++)
+        if (input.chars[i] == '\n')
+            Nfunctions++;
+    if (!differ_map_construct(This, Nfunctions))
+        return false;
+    char* line = strtok (input.chars,"\n");
+    while (line != NULL)
+    {
+        int Nread = 0;
+        char function[NAME_MAX], derivative[NAME_MAX];
+        sscanf (line, "%s%n", function, &Nread);
+        sscanf (line + Nread, "%s", derivative);
+        differ_map_add(This, (const char*)function, (const char*)derivative);
+        line = strtok (NULL, "\n");
+    }
+    return true;
+}
+
+bool differ_map_construct_file (DifferMap* This, FILE* file)
+{
+    assert(This);
+    assert(file);
+    Buffer input = {};
+    buffer_construct_file(&input, file);
     size_t Nfunctions = 0;
     for (int i = 0; i < input.length; i++)
         if (input.chars[i] == '\n')

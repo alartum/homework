@@ -10,6 +10,7 @@
 #define tree_node_dump(This) TreeNode_dump(This)
 /// To be stylish
 #define TreeNode_OK(This) tree_node_OK(This)
+#define tree_node_dump_r(This) tree_node_dump_r_(This, #This)
 
 //////////////////////
 //Beautiful defines///
@@ -77,7 +78,7 @@ TreeNode* tree_node_construct_copy (const TreeNode* other, TreeNode* left, TreeN
 *Destructs the given node.
 *@param This Pointer to the node to be destructed
 */
-void tree_node_destruct (TreeNode* This);
+void tree_node_destruct (TreeNode** This_pointer);
 /**
 *@brief Checks if the node is in a tree already
 *
@@ -147,15 +148,18 @@ bool tree_node_show_dot (const TreeNode* This);
 
 TreeNode* tree_node_construct (const enum NODE_TYPES type, const void *data, TreeNode* left, TreeNode* right)
 {
-    if (type == ERR)
+    if (type >= ERR || type < VAR)
         return NULL;
-    TreeNode* new_node = (TreeNode*)calloc(1, sizeof(*new_node));
+    TreeNode* new_node = (TreeNode*)calloc(1, sizeof(TreeNode));
+
     if (!new_node)
         return NULL;
+    //printf ("Type is %d\n", new_node->type);
     new_node->type = type;
     if (type == NUM)
     {
         new_node->value = *(float*)data;
+        //printf ("COn value %f", new_node->value);
         new_node->word = NULL;
     }
     else
@@ -163,16 +167,17 @@ TreeNode* tree_node_construct (const enum NODE_TYPES type, const void *data, Tre
         new_node->value = 0;
         new_node->word = strdup ((char*)data);
         if (!new_node)
-            return false;
+            return NULL;
     }
     new_node->parent = NULL;
     if (left && !tree_node_set_left(new_node, left))
-        return false;
+        return NULL;
     if (right && !tree_node_set_right(new_node, right))
-        return false;
+        return NULL;
+
     new_node->id = _CURRENT_ID;
     _CURRENT_ID++;
-//    tree_node_dump(new_node);
+
 
     return new_node;
 }
@@ -186,17 +191,19 @@ TreeNode* tree_node_construct_copy (const TreeNode* other, TreeNode* left, TreeN
         return tree_node_construct(other->type, other->word, left, right);
 }
 
-void tree_node_destruct (TreeNode* This)
+void tree_node_destruct (TreeNode** This_pointer)
 {
-    assert (This);
+    assert (This_pointer);
+    assert (*This_pointer);
+    TreeNode* This = *This_pointer;
     if (This->left)
     {
-        tree_node_destruct(This->left);
+        tree_node_destruct(&This->left);
         This->left = NULL;
     }
     if (This->right)
     {
-        tree_node_destruct(This->right);
+        tree_node_destruct(&This->right);
         This->right = NULL;
     }
     This->type = ERR;
@@ -212,8 +219,8 @@ void tree_node_destruct (TreeNode* This)
     }
     This->word = NULL;
     This->parent = NULL;
-    free (This);
-    This = NULL;
+    free (*This_pointer);
+    *This_pointer = NULL;
 }
 
 bool tree_node_linked (const TreeNode* This)
@@ -225,11 +232,10 @@ bool tree_node_linked (const TreeNode* This)
 bool tree_node_OK (const TreeNode* This)
 {
     assert (This);
-    bool is_ok = This->type != ERR;
-
-    bool is_legal_child = (!This->parent) || (This->parent &&
-                         (This->parent->left == This ||
-                          This->parent->right == This));
+    bool is_ok = This->type < ERR && This->type >= VAR;
+    bool is_legal_child = true;
+    if (This->parent)
+        is_legal_child = This->parent->left == This || This->parent->right == This;
 
     return is_ok && is_legal_child;
 }
@@ -243,25 +249,59 @@ void tree_node_dump_ (const TreeNode* This, const char name[])
     else
         printf ("ERROR)\n");
     printf ("{\n");
+    printf ("\taddress = %p\n\n", This);
     printf ("\tid = %d\n", This->id);
     printf ("\ttype = %d\n", This->type);
     printf ("\tvalue = %g\n", This->value);
-    printf ("\tword = %s\n", This->word);
+    printf ("\tword = <%s>\n", This->word);
     printf ("\tparent = %p\n", This->parent);
     printf ("\tleft = %p\n", This->left);
     printf ("\tright = %p\n", This->right);
     printf ("}\n");
+    if (!tree_node_OK(This))
+        getchar();
+}
+
+void tree_node_dump_r_ (const TreeNode* This, const char name[])
+{
+    assert (This);
+    printf ("%s = TreeNode (", name);
+    if (tree_node_OK(This))
+        printf ("ok)\n");
+    else
+        printf ("ERROR)\n");
+    printf ("{\n");
+    printf ("\taddress = %p\n\n", This);
+    printf ("\tid = %d\n", This->id);
+    printf ("\ttype = %d\n", This->type);
+    printf ("\tvalue = %g\n", This->value);
+    printf ("\tword = <%s>\n", This->word);
+    printf ("\tparent = %p\n", This->parent);
+    printf ("\tleft = %p\n", This->left);
+    printf ("\tright = %p\n", This->right);
+    printf ("}\n");
+    if (!tree_node_OK(This))
+        getchar();
+    if (This->left)
+        tree_node_dump_r(This->left);
+    if (This->right)
+        tree_node_dump_r(This->right);
 }
 
 bool tree_node_set_left (TreeNode* This, TreeNode* left)
 {
     ASSERT_OK(TreeNode, This);
     ASSERT_OK(TreeNode, left);
+    //printf ("Adding to\n");
+    //tree_node_dump(This);
+    //printf ("Setting left to\n");
+    //tree_node_dump(left);
     if (This->left || left->parent)
+    {
         return false;
+    }
     This->left = left;
     left->parent = This;
-
     return true;
 }
 
@@ -269,11 +309,14 @@ bool tree_node_set_right (TreeNode* This, TreeNode* right)
 {
     ASSERT_OK(TreeNode, This);
     ASSERT_OK(TreeNode, right);
+    //printf ("Adding to\n");
+    //tree_node_dump(This);
+    //printf ("Setting right to\n");
+   // tree_node_dump(right);
     if (This->right || right->parent)
         return false;
     This->right = right;
     right->parent = This;
-
     return true;
 }
 
@@ -281,6 +324,8 @@ bool tree_node_to_dot (const TreeNode* This, FILE* dot_file)
 {
     assert (dot_file);
     ASSERT_OK(TreeNode, This);
+   // printf ("Tree_to_dot\n");
+   // tree_node_dump(This);
     fprintf (dot_file, "\t%d ", This->id);
     switch (This->type)
     {
@@ -316,7 +361,7 @@ bool tree_node_show_dot (const TreeNode* This)
 {
     if (!This)
         return false;
-    open_file(dot_file, "dump.dot", "w", "File error has occured while dumping!");
+    open_file(dot_file, "dump.dot", "w", "Something went wrong, sir!");
     fprintf (dot_file, "digraph G {\n\tbgcolor = \"#FCFDFE\"\n");
     bool is_ok = tree_node_to_dot(This, dot_file);
     fprintf (dot_file, "}\n");
@@ -334,7 +379,6 @@ TreeNode* tree_node_full_copy (const TreeNode* source)
         tree_node_set_left(new_node, tree_node_full_copy(source->left));
     if (source->right)
         tree_node_set_right(new_node, tree_node_full_copy(source->right));
-
     return new_node;
 }
 
@@ -410,7 +454,7 @@ Expression tree_node_to_tex__ (const TreeNode* This)
         case '*':
             if (!strcmp(left.word, "(-1)"))
                 strcat (new_string, "-");
-            else if (right.type == var || right.type == pew)//don't put cdot
+            else if ((right.type == var || right.type == pew) && (left.type != pew))//don't put cdot
                 strcat (new_string, left.word);
             else
             {
@@ -419,7 +463,6 @@ Expression tree_node_to_tex__ (const TreeNode* This)
                     strcat (new_string, "\\left(");
                     strcat (new_string, left.word);
                     strcat (new_string, "\\right)");
-                    strcat (new_string, " \\cdot ");
                 }
                 else
                     strcat (new_string, left.word);
@@ -502,45 +545,44 @@ Expression tree_node_to_tex__ (const TreeNode* This)
     return result;
 }
 
+// Be sure to use with new_line = false only for really short formulas
 char* tree_node_to_tex (const TreeNode* This, bool new_line)
 {
     Expression tex_exp = tree_node_to_tex__(This);
     char* tex_string = (char*)calloc(strlen(tex_exp.word) + 10, sizeof(char*));
     if (new_line)
     {
-        strcat (tex_string, "$$\n");
+        //align*~dmath and \nonumber at the end
+        strcat (tex_string, "\\begin{align*}\n");
         strcat (tex_string, tex_exp.word);
-        strcat (tex_string, "$$\n");
+        strcat (tex_string, "\\end{align*}\n");
     }
     else
     {
-        strcat (tex_string, "$");
+        //strcat (tex_string, "$");
         strcat (tex_string, tex_exp.word);
-        strcat (tex_string, "$");
+        //strcat (tex_string, "$");
     }
 
     return tex_string;
 }
 
-bool tree_node_show_tex (const TreeNode* This)
+bool tree_node_show_tex (const TreeNode* This, FILE* format_file)
 {
     if (!This)
         return false;
-    open_file(tex_file, "./Tex/temp.tex", "w", "Can't find ./Tex directory\n");
     Buffer format = {};
-    if (!buffer_construct(&format, "./format.tex"))
-    {
-        printf ("Please, provide ./format.tex file.\n");
+    if (!buffer_construct_file(&format, format_file))
         return false;
-    }
+    open_file(tex_file, "./temp_show_tex.tex", "w", "Something is wrong, sir!");
     fprintf (tex_file, "%s\n\n\\begin{document}\n", format.chars);
     buffer_destruct(&format);
     fprintf (tex_file, "%s", tree_node_to_tex(This, true));
     fprintf (tex_file, "\\end{document}\n");
     close_file(tex_file);
-    system ("pdflatex -output-directory=./Tex -interaction=batchmode ./Tex/temp.tex");
-    system ("rm ./Tex/temp.tex");
-    system ("qpdfview ./Tex/temp.pdf");
+    system ("pdflatex -output-directory=./Tex -interaction=batchmode ./Tex/temp_show_tex.tex");
+    system ("rm ./Tex/temp_show_tex.tex");
+    system ("qpdfview ./Tex/temp_show_tex.pdf");
     return true;
 }
 

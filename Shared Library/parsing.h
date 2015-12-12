@@ -60,6 +60,7 @@ TreeNode* tree_node_from_string (const char* string)
     assert (string);
     char* cleared_string = clear_string(string);
     TreeNode* result = getINPUT(cleared_string);
+    //tree_node_show_dot(result);
     free (cleared_string);
     if (!result)
         printf ("ERROR::Can't parse the input.\n");
@@ -68,8 +69,13 @@ TreeNode* tree_node_from_string (const char* string)
 
 TreeNode* getNUMBER()
 {
-    float val = 0;
+    float val = 0, mul = 1;
     char* saved = _S;
+    if (*_S == '-' && isdigit(*(_S + 1)))
+    {
+        _S++;
+        mul = -1;
+    }
     while (isdigit(*_S))
     {
         CHECK_POINTER();
@@ -88,6 +94,7 @@ TreeNode* getNUMBER()
             _S++;
         }
     }
+    val *= mul;
     if (saved != _S)
     {
        // printf ("NUM <%f>\n", val);
@@ -161,9 +168,13 @@ TreeNode* getMIXED()
     //else
     new_node = getBRACKETS();
     if (saved != _S)
+    {
         return new_node;
+    }
     //else
     new_node = getCHARED();
+    //BADABOOM("fu");
+    //tree_node_show_dot(new_node);
     return new_node;
 }
 
@@ -202,7 +213,11 @@ TreeNode* getCHARED()
     TreeNode* new_node = getBRACKETS();
     if (new_node)
     {
+        //BADABOOM("Here");
+        //printf ("name: %s\n", name);
+        //tree_node_dump(new_node);
         TreeNode* parent = _FU(name, new_node);
+        //tree_node_dump(parent);
         free (name);
         return parent;
     }
@@ -221,7 +236,7 @@ TreeNode* getBRACKETS()
         TreeNode* new_node = getSUM();
         assert (*_S == ')');
         _S++;
-
+        //tree_node_dump(new_node);
         return new_node;
     }
     else
@@ -242,7 +257,7 @@ TreeNode* getPOW()
     }
     parent_node = base_node;
     //printf ("POW ENDED\n");
-    //tree_node_show_dot(parent_node);
+   // tree_node_show_dot(parent_node);
 
     return parent_node;
 }
