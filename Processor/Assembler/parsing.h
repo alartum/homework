@@ -6,7 +6,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include "tree.h"
+#include <tree.h>
 
 // Pointer to the current symbol
 char* _S = NULL;

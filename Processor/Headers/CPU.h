@@ -243,6 +243,87 @@ IF_JUMP (jbe, <=)
 IF_JUMP (je,  ==)
 IF_JUMP (jne, !=)
 
+#define IF_CALL(name, operation) \
+bool cpu_ ## name (CPU* This)\
+{\
+    ASSERT_OK(CPU, This);\
+    TYPE top = 0, next = 0;\
+    This->position++;\
+    int new_position = *(int*)(This->program.chars + This->position);\
+    \
+    if (!stack_pop(&This->stack, &top) || !stack_pop(&This->stack, &next))\
+    {\
+        cpu_destruct(This);\
+        ASSERT_OK(CPU, This);\
+        return false;\
+    }\
+    else\
+    {\
+        /*printf ("CHECK: %f " #operation " %f =>", top, next);*/\
+        if (top operation next)\
+        {\
+            This->position += sizeof (int);\
+            if (!stack_push (&This->fu_stack, (float)This->position))\
+                return false;\
+            This->position = new_position;\
+            /*printf ("jmp %d\n", new_position);*/\
+        }\
+        else\
+        {\
+            This->position += sizeof(int);\
+            /*printf ("jmp ++\n");*/\
+        }\
+        ASSERT_OK(CPU, This);\
+        return true;\
+    }\
+}
+
+IF_CALL (ca,  > )
+IF_CALL (cae, >=)
+IF_CALL (cb,  < )
+IF_CALL (cbe, <=)
+IF_CALL (ce,  ==)
+IF_CALL (cne, !=)
+
+#define COMPARE(name, operation) \
+bool cpu_ ## name (CPU* This)\
+{\
+    ASSERT_OK(CPU, This);\
+    TYPE top = 0, next = 0;\
+    \
+    if (!stack_pop(&This->stack, &top) || !stack_pop(&This->stack, &next))\
+    {\
+        cpu_destruct(This);\
+        ASSERT_OK(CPU, This);\
+        return false;\
+    }\
+    else\
+    {\
+        /*printf ("CHECK: %f " #operation " %f =>", top, next);*/\
+        if (top operation next)\
+        {\
+            if (!stack_push (&This->stack, 1.0))\
+                return false;\
+            /*printf ("jmp %d\n", new_position);*/\
+        }\
+        else\
+        {\
+            if (!stack_push (&This->stack, 0.0))\
+                return false;\
+            /*printf ("jmp ++\n");*/\
+        }\
+        ASSERT_OK(CPU, This);\
+        return true;\
+    }\
+}
+
+COMPARE (les, <)
+COMPARE (leq, <=)
+COMPARE (gre, >)
+COMPARE (grq, >=)
+COMPARE (equ, ==)
+COMPARE (neq, !=)
+
 // Dummy functions
 bool cpu_call(CPU* This)
 {
@@ -473,6 +554,25 @@ bool cpu_sub (CPU* This)
         sub = a - b;
         ASSERT_OK(CPU, This);
         return stack_push(&This->stack, sub);
+    }
+}
+
+bool cpu_mod (CPU* This)
+{
+    ASSERT_OK(CPU, This);
+    TYPE a = 0, b = 0, mod = 0;
+
+    if (!stack_pop(&This->stack, &a) || !stack_pop(&This->stack, &b))
+    {
+        cpu_destruct(This);
+        ASSERT_OK(CPU, This);
+        return false;
+    }
+    else
+    {
+        mod = (int)a % (int)b;
+        ASSERT_OK(CPU, This);
+        return stack_push(&This->stack, mod);
     }
 }
 

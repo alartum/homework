@@ -1,0 +1,45 @@
+#include <stn.dlib>
+
+factorr(ebp)
+{
+    
+    if (ebx == 1)
+    {
+        print (ebx);
+        return (ebp);  
+    } 
+    
+    ebx = ebx - 1;
+    ecx = ecx * ebx;
+    factorr(ebp);
+}
+
+factor(eax)
+{
+    ecx = 1;
+    
+    ebx = 1;
+    
+    while (ecx < eax)
+    {
+        ebx = ebx * ecx;
+        ecx = ecx + 1;
+    }
+    
+    return (ebx);
+}
+
+main()
+{
+    read (eax);
+    factor (eax);
+    print (ebx);
+    read (ebp);
+    ebx = eax;
+    ecx = 1;
+    edx = factor(eax);
+    print (edx);
+    
+    return (0);
+}
+

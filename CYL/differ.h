@@ -674,6 +674,7 @@ void write_lab (FILE* info_file, FILE* tex_file)
 
     tex_init(tex_file, "format.tex");
     TreeNode* root = tree_node_from_string(formula);
+    tree_node_show_dot(root);
     fprintf (tex_file, "Вычислим значение %s по следующей формуле:\n%s", to_find, tree_node_to_tex(root, true));
     fprintf (tex_file, "Запишем данные в таблицу:\n\n");
     fprintf (tex_file, "\\begin{tabular}{|c|c|}\n \\hline\n Величина&Значение\\\\\n \\hline\n");
@@ -684,7 +685,7 @@ void write_lab (FILE* info_file, FILE* tex_file)
 
     DifferMap d_map = {};
     if (!differ_map_construct_filename(&d_map, "derivatives.txt"))
-        return NULL;
+        return;
 
     DifferMap* derivatives = build_all_derivatives(root, true, &d_map, tex_file);
     if (!derivatives)
