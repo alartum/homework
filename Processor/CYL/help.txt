@@ -1,0 +1,11 @@
+Compute Your Labs [CYA] helps you to calculate errors of the given formulas.
+The right way to call it:
+    CYL formula.txt 
+    
+    (1)'text.txt' stands for text file containing the formula
+    (2)'info.csv' stands for the info output file and may not be given.
+    The result is written to 'info.csv' in this case.
+    
+Other possible keys:
+    --help to get help
+    --version to get version

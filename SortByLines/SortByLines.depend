@@ -1,0 +1,50 @@
+# depslib dependency file v1.0
+1444069352 source:/home/alartum/Study/Proga/SortByLines/main.cpp
+	<stdio.h>
+	"mylib.h"
+	"files.h"
+	<string.h>
+	"stringlist.h"
+	<errno.h>
+
+1444032025 /home/alartum/Study/Proga/SortByLines/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<errno.h>
+	<assert.h>
+
+1443164752 /home/alartum/Study/Proga/SortByLines/dynamiclib.h
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+
+1444023660 /home/alartum/Study/Proga/SortByLines/files.h
+	<errno.h>
+	<stdio.h>
+	<stdlib.h>
+	"sort.h"
+
+1444022863 /home/alartum/Study/Proga/SortByLines/sort.h
+	"mystring.h"
+
+1444069373 /home/alartum/Study/Proga/SortByLines/mystring.h
+	<string.h>
+	"mylib.h"
+	<errno.h>
+	"errors.h"
+
+1444011497 /home/alartum/Study/Proga/SortByLines/errors.h
+
+1444029632 /home/alartum/Study/Proga/SortByLines/stringlist.h
+	"mystring.h"
+	"buffer.h"
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+	"sort.h"
+
+1444021632 /home/alartum/Study/Proga/SortByLines/buffer.h
+	"errors.h"
+	<string.h>
+

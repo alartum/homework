@@ -1,0 +1,39 @@
+# depslib dependency file v1.0
+1450036028 source:/home/alartum/Study/Proga/DL/main.c
+	<stdio.h>
+	"mylib.h"
+	<string.h>
+	<limits.h>
+	"parsing.h"
+
+1449830098 /home/alartum/Study/Proga/Shared Library/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+	"buffer.h"
+	<stdbool.h>
+	"type_info.h"
+	"type_info.h"
+
+1449876917 /home/alartum/Study/Proga/Shared Library/buffer.h
+	<string.h>
+	<stdbool.h>
+	<assert.h>
+	<stdlib.h>
+	<errno.h>
+
+1446574607 /home/alartum/Study/Proga/Shared Library/type_info.h
+
+1450084708 /home/alartum/Study/Proga/DL/parsing.h
+	<stdio.h>
+	<assert.h>
+	<ctype.h>
+	<string.h>
+	"compar.h"
+
+1450084773 /home/alartum/Study/Proga/DL/compar.h
+

@@ -1,0 +1,10 @@
+print:
+out
+ret
+
+read:
+in
+pop eax
+ret
+
+

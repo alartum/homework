@@ -1,0 +1,27 @@
+# depslib dependency file v1.0
+1442738851 source:/home/alartum/Homework/Proga/SolveSquareEquation/main.cpp
+	<stdio.h>
+	<math.h>
+	<assert.h>
+	"mylib.h"
+
+1442739312 /home/alartum/Homework/Proga/SolveSquareEquation/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<errno.h>
+	<assert.h>
+
+1442738851 source:/home/alartum/Study/Proga/SolveSquareEquation/main.cpp
+	<stdio.h>
+	<math.h>
+	<assert.h>
+	"mylib.h"
+
+1442739451 /home/alartum/Study/Proga/SolveSquareEquation/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<errno.h>
+	<assert.h>
+

@@ -1,0 +1,197 @@
+\documentclass[12pt]{article}
+
+\pagestyle{empty}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[russian]{babel}
+\usepackage{cmap}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{breqn}
+%\usepackage{units}
+%\usepackage{fancyhdr}
+%\usepackage{forloop}
+%\usepackage[pdftex]{graphicx}
+\relpenalty=10000
+\binoppenalty=10000
+
+\renewcommand{\baselinestretch}{1.0}
+\renewcommand\normalsize{\sloppypar}
+
+\setlength{\topmargin}{-0.5in}
+\setlength{\textheight}{9.1in}
+\setlength{\oddsidemargin}{-0.4in}
+\setlength{\evensidemargin}{-0.4in}
+\setlength{\textwidth}{7in}
+\setlength{\parindent}{0ex}
+\setlength{\parskip}{1ex}
+
+ \begin{document}
+
+Вычислим значение z по следующей формуле:
+\begin{dmath*}
+ \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \end{dmath*}
+Запишем данные в таблицу:
+
+\begin{tabular}{|c|c|}
+ \hline
+ Величина&Значение\\
+ \hline
+$x$&$1$\\
+\hline
+$d_x$&$0.5$\\
+\hline
+$y$&$1$\\
+\hline
+$d_y$&$0.5$\\
+\hline
+\end{tabular}
+
+Найдём погрешность. Для этого построим частные производные.
+
+Найдём частные производные по каждой из переменных.
+
+$\blacktriangleright$Найдём частную производную следующего выражения по x:
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{x}^{\prime}
+                             \end{dmath*}
+
+$\vartriangleright$Упростив, получим: 
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{x}^{\prime}
+                             \end{dmath*}
+
+$\vartriangleright$Продифференцируем.
+
+Вычисляя производную степенной функции:
+\begin{dmath*}
+\left(y^{3}\right)_{x}^{\prime} = 3y^{2}
+\end{dmath*}Вычисляя производную степенной функции:
+\begin{dmath*}
+\left(x^{2}\right)_{x}^{\prime} = 2x
+\end{dmath*}Производная константы равна 0:
+\begin{dmath*}
+\left(2\right)_{x}^{\prime} = 0
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(2x^{2}\right)_{x}^{\prime} = 0x^{2} + 2 \cdot 2x
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(2x^{2}y^{3}\right)_{x}^{\prime} = 0x^{2} + 2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}
+\end{dmath*}Рассматриваем переменную как константу:
+\begin{dmath*}
+\left(y\right)_{x}^{\prime} = 0
+\end{dmath*}По теореме о производной сложной функции:
+\begin{dmath*}
+\left(\cos y\right)_{x}^{\prime} = -\sin y \cdot 0
+\end{dmath*}Производная переменной дифференцирования:
+\begin{dmath*}
+\left(x\right)_{x}^{\prime} = 1
+\end{dmath*}По теореме о производной сложной функции:
+\begin{dmath*}
+\left(\sin x\right)_{x}^{\prime} = \cos x \cdot 1
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(\sin x \cdot \cos y\right)_{x}^{\prime} = \cos x \cdot 1\cos y + \sin x \cdot -\sin y \cdot 0
+\end{dmath*}Находим производную частного:
+\begin{dmath*}
+\left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{x}^{\prime} =  \frac {\left(\cos x \cdot 1\cos y + \sin x \cdot -\sin y \cdot 0\right) \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(0x^{2} + 2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} 
+\end{dmath*}$\vartriangleright$Упростим полученную производную.
+
+Нетрудно дойти до того, что\begin{dmath*}
+x = x
+\end{dmath*}Можно упростить:\begin{dmath*}
+0x^{2} = 0
+\end{dmath*}Очевидно, что\begin{dmath*}
+-\sin y \cdot 0 = 0
+\end{dmath*}После некоторых вычислений получим:\begin{dmath*}
+\cos x \cdot 1 = \cos x
+\end{dmath*}Можно упростить:\begin{dmath*}
+0 + 2 \cdot 2x = 2 \cdot 2x
+\end{dmath*}Поймём, что\begin{dmath*}
+\sin x \cdot 0 = 0
+\end{dmath*}Немного подумав, получим:\begin{dmath*}
+\cos x \cdot \cos y + 0 = \cos x \cdot \cos y
+\end{dmath*}$\vartriangleright$Наконец, получаем окончательный ответ:
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{x}^{\prime} =  \frac {\cos x \cdot \cos y \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} 
+                             \end{dmath*}
+
+$\blacktriangleright$Найдём частную производную следующего выражения по y:
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{y}^{\prime}
+                             \end{dmath*}
+
+$\vartriangleright$Упростив, получим: 
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{y}^{\prime}
+                             \end{dmath*}
+
+$\vartriangleright$Продифференцируем.
+
+Вычисляя производную степенной функции:
+\begin{dmath*}
+\left(y^{3}\right)_{y}^{\prime} = 3y^{2}
+\end{dmath*}Вычисляя производную степенной функции:
+\begin{dmath*}
+\left(x^{2}\right)_{y}^{\prime} = 2x
+\end{dmath*}Производная константы равна 0:
+\begin{dmath*}
+\left(2\right)_{y}^{\prime} = 0
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(2x^{2}\right)_{y}^{\prime} = 0x^{2} + 2 \cdot 2x
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(2x^{2}y^{3}\right)_{y}^{\prime} = 0x^{2} + 2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}
+\end{dmath*}Производная переменной дифференцирования:
+\begin{dmath*}
+\left(y\right)_{y}^{\prime} = 1
+\end{dmath*}По теореме о производной сложной функции:
+\begin{dmath*}
+\left(\cos y\right)_{y}^{\prime} = -\sin y \cdot 1
+\end{dmath*}Рассматриваем переменную как константу:
+\begin{dmath*}
+\left(x\right)_{y}^{\prime} = 0
+\end{dmath*}По теореме о производной сложной функции:
+\begin{dmath*}
+\left(\sin x\right)_{y}^{\prime} = \cos x \cdot 0
+\end{dmath*}Из выражения для производной произведения:
+\begin{dmath*}
+\left(\sin x \cdot \cos y\right)_{y}^{\prime} = \cos x \cdot 0\cos y + \sin x \cdot -\sin y \cdot 1
+\end{dmath*}Находим производную частного:
+\begin{dmath*}
+\left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{y}^{\prime} =  \frac {\left(\cos x \cdot 0\cos y + \sin x \cdot -\sin y \cdot 1\right) \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(0x^{2} + 2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} 
+\end{dmath*}$\vartriangleright$Упростим полученную производную.
+
+Можно догадаться, что\begin{dmath*}
+x = x
+\end{dmath*}Заметим, что\begin{dmath*}
+0x^{2} = 0
+\end{dmath*}Заметим, что\begin{dmath*}
+-\sin y \cdot 1 = -\sin y
+\end{dmath*}Осознаем, что\begin{dmath*}
+\cos x \cdot 0 = 0
+\end{dmath*}Как подсказывает опыт,\begin{dmath*}
+0 + 2 \cdot 2x = 2 \cdot 2x
+\end{dmath*}Поймём, что\begin{dmath*}
+0\cos y = 0
+\end{dmath*}В курсе высшей математики доказывается, что\begin{dmath*}
+0 + \sin x \cdot -\sin y = \sin x \cdot -\sin y
+\end{dmath*}$\vartriangleright$Наконец, получаем окончательный ответ:
+                             \begin{dmath*}
+                             \left( \frac {\sin x \cdot \cos y} {2x^{2}y^{3}} \right)_{y}^{\prime} =  \frac {\sin x \cdot -\sin y \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} 
+                             \end{dmath*}
+
+Тогда погрешность может быть вычислена по следующей формуле:
+
+\begin{dmath*}
+                         \sigma_z = \left(\left( \frac {\cos x \cdot \cos y \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} d_x\right)^{2} + \left( \frac {\sin x \cdot -\sin y \cdot 2x^{2}y^{3} - \sin x \cdot \cos y \cdot \left(2 \cdot 2xy^{3} + 2x^{2} \cdot 3y^{2}\right)} {\left(2x^{2}y^{3}\right)^{2}} d_y\right)^{2}\right)^{0.5}
+                         \end{dmath*}
+
+$\rhd$Вычисляя, находим: $\sigma_z = 0.894912$.
+
+$\blacktriangleright$Таким образом получаем, что $z = 0.23 \pm 0.89$
+
+\end{document}

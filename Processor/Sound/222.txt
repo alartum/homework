@@ -1,0 +1,106 @@
+import wave
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import math
+import random
+
+types = {
+    1: np.int8,
+    2: np.int16,
+    4: np.int32
+}
+
+
+wav = wave.open("metronom.wav", mode="r")
+(nchannels, sampwidth, framerate, nframes, comptype, compname) = wav.getparams()
+
+duration = nframes / framerate
+w, h = 1000, 800
+k = nframes/w/32
+DPI = 100
+peak = 256 ** sampwidth / 2
+
+content = wav.readframes(nframes)
+samples = np.fromstring(content, dtype=types[sampwidth])
+
+plt.figure(1, figsize=(float(w)/DPI, float(h)/DPI), dpi=DPI)
+np.set_printoptions(threshold=np.nan)
+
+sta = 5
+# 1-------------------------------------------------------------
+channel = samples[0::nchannels][:200000]
+axes = plt.subplot(sta, 1, 1, axisbg="k")
+axes.plot(channel, "r")
+# 2----------------------------------------------------------------
+
+sum_arr = [0] * channel.size
+
+
+for n in range(1, 3):
+	STEP = 500
+	for j in range(STEP):
+		sum_arr[0] += abs(channel[j])
+	for j in range(1, len(channel) - STEP):
+		sum_arr[j] = sum_arr[j - 1] - abs(channel[j - 1]) + abs(channel[j + STEP - 1])
+
+	for j in range(len(sum_arr)):
+		sum_arr[j] //= STEP
+	channel = sum_arr[:]
+		
+axes = plt.subplot(sta, 1, 2, axisbg="k")
+axes.plot(sum_arr, "g")
+# 3------------------------------------------------------------------------
+LIM_AMP = max(sum_arr) / 7
+for j in range(len(sum_arr)):
+	if sum_arr[j] < LIM_AMP:
+		sum_arr[j] = 0
+axes = plt.subplot(sta, 1, 3, axisbg="k")
+axes.plot(sum_arr, "g")
+# 4-----------------------------------------
+res_arr = [0] * len(sum_arr)
+le = len(sum_arr)
+STEP = 1500
+i = 0
+while i < le - STEP:
+	if sum_arr[i] == 0:
+		res_arr[i] = 0
+		i += 1
+	else:
+		su = 0
+		j = 0
+		while j < STEP and sum_arr[j + i] != 0:
+			su += sum_arr[i + j]
+			j += 1
+		su //= j
+		if su > LIM_AMP:
+			for j in range(i, i + STEP):
+				res_arr[j] = su
+		else:
+			for j in range(i, i + STEP):
+				res_arr[j] = 0
+		i = j
+axes = plt.subplot(sta, 1, 4, axisbg="k")
+axes.plot(res_arr, "g")
+# 5--------------------------------------------------------
+i = 0
+while i < le:
+	if res_arr[i] != 0:
+		j = i
+		su = 0
+		while res_arr[j] != 0 and j < le - 1:
+			j += 1
+			su += res_arr[j]
+		su //= j - i
+		for k in range(i, j):
+			res_arr[k] = su
+		i = j
+	else:
+		 i += 1
+axes = plt.subplot(sta, 1, 5, axisbg="k")
+axes.plot(res_arr, "g")
+# -----------------------------------------------------------
+
+plt.savefig("wave", dpi=DPI)
+plt.show()
+

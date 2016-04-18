@@ -1,0 +1,11 @@
+Disassembler converts the machine code back to source code.
+
+The right way to call it:
+    ./Disassembler program.code [source.asm]
+    
+    (1)'program.code' stands for the output.
+    (2)'source.asm' stands for the file with code and may not be given. The result is written to 'source.asm' in this case.
+
+Other possible keys:
+    --help        get help
+    --version     get version

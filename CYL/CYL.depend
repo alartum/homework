@@ -1,0 +1,82 @@
+# depslib dependency file v1.0
+1454348124 source:/home/alartum/Study/Proga/CYL/main.c
+	<stdio.h>
+	<string.h>
+	<time.h>
+	"tex.h"
+	"mylib.h"
+	"buffer.h"
+	<limits.h>
+	"tree.h"
+	"differ.h"
+	"mail.h"
+
+1449830098 /home/alartum/Study/Proga/Shared Library/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+	"buffer.h"
+	<stdbool.h>
+	"type_info.h"
+	"type_info.h"
+
+1449876917 /home/alartum/Study/Proga/Shared Library/buffer.h
+	<string.h>
+	<stdbool.h>
+	<assert.h>
+	<stdlib.h>
+	<errno.h>
+
+1446574607 /home/alartum/Study/Proga/Shared Library/type_info.h
+
+1449937981 /home/alartum/Study/Proga/Shared Library/tree.h
+	<assert.h>
+	<stdio.h>
+
+1454348240 /home/alartum/Study/Proga/Shared Library/parsing.h
+	<stdio.h>
+	<assert.h>
+	<ctype.h>
+	<string.h>
+	<math.h>
+	<tree.h>
+
+1454348257 /home/alartum/Study/Proga/CYL/differ.h
+	<math.h>
+	<string.h>
+	"map.h"
+	"list.h"
+	"tex.h"
+	"fu_table.h"
+
+1454348232 /home/alartum/Study/Proga/Shared Library/map.h
+	<assert.h>
+	<stdio.h>
+	<limits.h>
+	<string.h>
+	"mylib.h"
+	"buffer.h"
+	"tree.h"
+	"parsing.h"
+
+1449707019 /home/alartum/Study/Proga/Shared Library/list.h
+	<stdio.h>
+	<assert.h>
+	<string.h>
+
+1449703526 /home/alartum/Study/Proga/Shared Library/mail.h
+	<string.h>
+	<stdlib.h>
+	<stdio.h>
+
+1449710323 /home/alartum/Study/Proga/CYL/fu_table.h
+
+1449886155 /home/alartum/Study/Proga/Shared Library/tex.h
+	"buffer.h"
+	"mylib.h"
+	<stdio.h>
+

@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1442773831 source:/home/alartum/Study/Proga/Test/D1/main.cpp
+	<stdio.h>
+	"mylib.h"
+	<errno.h>
+
+1442773910 /home/alartum/Study/Proga/Test/D1/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<errno.h>
+	<assert.h>
+

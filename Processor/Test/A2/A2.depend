@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1442782414 source:/home/alartum/Study/Proga/Test/A2/main.cpp
+	<stdio.h>
+	"mylib.h"
+	"dynamiclib.h"
+	<errno.h>
+
+1442780585 /home/alartum/Study/Proga/Test/A2/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<errno.h>
+	<assert.h>
+
+1442782414 /home/alartum/Study/Proga/Test/A2/dynamiclib.h
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+

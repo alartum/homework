@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1449183099 source:/home/alartum/Study/Proga/calc/main.c
+	<stdio.h>
+	<assert.h>
+	<ctype.h>
+	<string.h>
+

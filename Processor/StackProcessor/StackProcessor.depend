@@ -1,0 +1,80 @@
+# depslib dependency file v1.0
+1445639429 source:/home/alartum/Study/Proga/StackProcessor/main.c
+	<stdio.h>
+	"mylib.h"
+	"CPU.h"
+
+1445639446 /home/alartum/Study/Proga/StackProcessor/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+
+1445559292 /home/alartum/Study/Proga/StackProcessor/stack_t.h
+	<assert.h>
+	<errno.h>
+
+1445626271 /home/alartum/Study/Proga/StackProcessor/stack.h
+	<assert.h>
+	<errno.h>
+	<string.h>
+
+1445639325 /home/alartum/Study/Proga/StackProcessor/CPU.h
+	"CPU.h"
+	<math.h>
+	<assert.h>
+	<errno.h>
+	"stack.h"
+	"codes.h"
+
+1445637928 /home/alartum/Study/Proga/StackProcessor/codes.h
+
+1448670575 source:/home/alartum/Study/Proga/Processor/StackProcessor/main.c
+	<stdio.h>
+	"mylib.h"
+	<string.h>
+	<limits.h>
+	"CPU.h"
+
+1448406240 /home/alartum/Study/Proga/Processor/Headers/mylib.h
+	<stdio.h>
+	<math.h>
+	<float.h>
+	<string.h>
+	<stdlib.h>
+	<errno.h>
+	<assert.h>
+	"buffer.h"
+	<stdbool.h>
+	"type_info.h"
+	"type_info.h"
+
+1450049800 /home/alartum/Study/Proga/Processor/Headers/CPU.h
+	<math.h>
+	<assert.h>
+	<errno.h>
+	"stack.h"
+	"reg_address.h"
+	"commands.h"
+
+1448576225 /home/alartum/Study/Proga/Processor/Headers/stack.h
+	<assert.h>
+	<errno.h>
+	<string.h>
+
+1445685007 /home/alartum/Study/Proga/Processor/Headers/codes.h
+
+1446574607 /home/alartum/Study/Proga/Processor/Headers/type_info.h
+
+1448408263 /home/alartum/Study/Proga/Processor/Headers/buffer.h
+	<string.h>
+	<stdbool.h>
+
+1447422998 /home/alartum/Study/Proga/Processor/Headers/exit_codes.h
+
+1448269018 /home/alartum/Study/Proga/Processor/Headers/reg_address.h
+
+1450048728 /home/alartum/Study/Proga/Processor/Headers/commands.h
+
