@@ -1,0 +1,63 @@
+# Objectfiles
+*.o
+*.ko
+*.obj
+*.elf
+
+# PrecompiledHeaders
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Sharedobjects(inc.WindowsDLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debugfiles
+*.dSYM/
+
+# OpenFrameworks
+
+[Bb]in/*
+![Bb]in/data/
+[Bb]uild/
+[Oo]bj/
+*.o
+[Dd]ebug*/
+[Rr]elease*/
+*.mode*
+*.app/
+*.pyc
+*.log
+
+# Code::Blocks
+
+*.depend
+*.layout
+*.cbp
+
+# Windowsimagefilecaches
+Thumbs.db
+
+# Folderconfigfile
+Desktop.ini
+
+# Doxygen
+html/
+latex/
+Doxyfile*
