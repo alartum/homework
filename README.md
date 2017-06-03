@@ -3,7 +3,8 @@
 Repo contains some small projects created for fun and study.
 
 
-##Directory info
+## Directory info
+
 Directory Name | Purpose
 ------------ | -------------
 container-library | Optimised containers for different purposes
